@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { userService } from '../services/api';
 import { useAuthStore } from '../store/store';
+
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user, updateUser } = useAuthStore();
+  const navigate = useNavigate();
+
   const [profileData, setProfileData] = useState({
     profilePhoto: '',
     firstName: '',
@@ -74,6 +78,7 @@ const Profile = () => {
       updateUser(response.data.user);
       setIsEditing(false);
       toast.success('Profile updated successfully!');
+      navigate('/players'); // Redirect to players section after update
     } catch (error) {
       toast.error('Failed to update profile');
     } finally {
@@ -120,6 +125,13 @@ const Profile = () => {
                 }
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {profileData.profilePhoto && (
+                <img
+                  src={profileData.profilePhoto}
+                  alt="Profile Preview"
+                  className="mt-4 w-32 h-32 rounded-full object-cover border-4 border-blue-600"
+                />
+              )}
             </div>
           )}
 
@@ -279,3 +291,57 @@ const Profile = () => {
 };
 
 export default Profile;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,4 @@
+
 const User = require('../models/User');
 
 // Get user profile
@@ -21,6 +22,40 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, email, phone, city, userType, skills, profilePhoto } = req.body;
+
+    const updateData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      userType,
+      skills,
+      profilePhoto,
+      updatedAt: Date.now()
+    };
+
+    if (city) {
+      updateData['location.city'] = city;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
   try {

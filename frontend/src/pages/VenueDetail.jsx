@@ -13,7 +13,7 @@ const VenueDetail = ({ id, onClose }) => {
       setLoading(true);
       try {
         const response = await venueService.getVenueById(id);
-        setVenue(response.data);
+        setVenue(response.data.venue);
       } catch (error) {
         toast.error('Failed to load venue details.');
       } finally {
