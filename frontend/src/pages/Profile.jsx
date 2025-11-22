@@ -16,9 +16,15 @@ const Profile = () => {
     email: '',
     phone: '',
     city: '',
+    address: '',
+    state: '',
     userType: '',
-    skills: []
+    skills: [],
+    bio: '',
+    preferredSports: '', // comma separated string in UI
+    availableHours: 'Flexible' // matches enum values
   });
+
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,9 +36,17 @@ const Profile = () => {
         lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
-        city: user.city || '',
-        userType: user.userType || '',
-        skills: user.skills || []
+        // location fields from model
+        city: user.location?.city || '',
+        address: user.location?.address || '',
+        state: user.location?.state || '',
+        userType: user.userType || 'Player',
+        skills: user.skills || [],
+        bio: user.bio || '',
+        preferredSports: Array.isArray(user.preferredSports)
+          ? user.preferredSports.join(', ')
+          : '',
+        availableHours: user.availableHours?.type || 'Flexible'
       });
     }
   }, [user]);
@@ -47,7 +61,10 @@ const Profile = () => {
 
   const handleSkillChange = (index, field, value) => {
     const updatedSkills = [...profileData.skills];
-    updatedSkills[index][field] = value;
+    updatedSkills[index] = {
+      ...updatedSkills[index],
+      [field]: value
+    };
     setProfileData((prev) => ({
       ...prev,
       skills: updatedSkills
@@ -57,7 +74,10 @@ const Profile = () => {
   const addSkill = () => {
     setProfileData((prev) => ({
       ...prev,
-      skills: [...prev.skills, { skillName: '', proficiencyLevel: 'Beginner' }]
+      skills: [
+        ...prev.skills,
+        { skillName: '', proficiencyLevel: 'Beginner' }
+      ]
     }));
   };
 
@@ -74,12 +94,24 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
-      const response = await userService.updateProfile(profileData);
+      // Convert preferredSports string -> array for backend
+      const payload = {
+        ...profileData,
+        preferredSports: profileData.preferredSports
+          ? profileData.preferredSports
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : []
+      };
+
+      const response = await userService.updateProfile(payload);
       updateUser(response.data.user);
       setIsEditing(false);
       toast.success('Profile updated successfully!');
       navigate('/players'); // Redirect to players section after update
     } catch (error) {
+      console.error(error);
       toast.error('Failed to update profile');
     } finally {
       setIsLoading(false);
@@ -113,6 +145,7 @@ const Profile = () => {
               />
             </div>
           )}
+
           {isEditing && (
             <div className="mb-6">
               <label className="block mb-2 font-medium">Profile Photo URL</label>
@@ -136,6 +169,7 @@ const Profile = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic info + location */}
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium mb-2">First Name</label>
@@ -186,11 +220,35 @@ const Profile = () => {
               </div>
 
               <div>
+                <label className="block text-sm font-medium mb-2">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={profileData.address}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium mb-2">City</label>
                 <input
                   type="text"
                   name="city"
                   value={profileData.city}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">State</label>
+                <input
+                  type="text"
+                  name="state"
+                  value={profileData.state}
                   onChange={handleChange}
                   disabled={!isEditing}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -213,8 +271,55 @@ const Profile = () => {
                   <option value="Venue Manager">Venue Manager</option>
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Available Hours</label>
+                <select
+                  name="availableHours"
+                  value={profileData.availableHours}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                >
+                  <option value="Flexible">Flexible</option>
+                  <option value="Weekdays">Weekdays</option>
+                  <option value="Weekends">Weekends</option>
+                  <option value="Evenings">Evenings</option>
+                </select>
+              </div>
             </div>
 
+            {/* Bio */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Bio</label>
+              <textarea
+                name="bio"
+                value={profileData.bio}
+                onChange={handleChange}
+                disabled={!isEditing}
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                placeholder="Tell others a bit about yourself..."
+              />
+            </div>
+
+            {/* Preferred sports */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Preferred Sports (comma separated)
+              </label>
+              <input
+                type="text"
+                name="preferredSports"
+                value={profileData.preferredSports}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                placeholder="e.g. Cricket, Football, Tennis"
+              />
+            </div>
+
+            {/* Skills */}
             <div>
               <div className="flex justify-between items-center mb-4">
                 <label className="block text-sm font-medium">Skills</label>
@@ -231,25 +336,27 @@ const Profile = () => {
 
               <div className="space-y-2">
                 {profileData.skills.map((skill, index) => (
-                  <div key={index} className="flex gap-2 items-center">
+                  <div key={index} className="flex flex-wrap gap-2 items-center">
                     <input
                       type="text"
                       placeholder="Skill Name"
-                      value={skill.skillName}
+                      value={skill.skillName || ''}
                       onChange={(e) => handleSkillChange(index, 'skillName', e.target.value)}
                       disabled={!isEditing}
                       className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     />
                     <select
-                      value={skill.proficiencyLevel}
-                      onChange={(e) => handleSkillChange(index, 'proficiencyLevel', e.target.value)}
+                      value={skill.proficiencyLevel || 'Beginner'}
+                      onChange={(e) =>
+                        handleSkillChange(index, 'proficiencyLevel', e.target.value)
+                      }
                       disabled={!isEditing}
                       className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     >
                       <option value="Beginner">Beginner</option>
                       <option value="Intermediate">Intermediate</option>
                       <option value="Advanced">Advanced</option>
-                      <option value="Expert">Expert</option>
+                      <option value="Professional">Professional</option>
                     </select>
                     {isEditing && (
                       <button
@@ -291,57 +398,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
