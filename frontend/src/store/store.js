@@ -1,28 +1,71 @@
 import create from 'zustand';
 
+// Helper to get persisted user data from localStorage
+const getPersistedUser = () => {
+  try {
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (user && token) {
+      return { 
+        user: JSON.parse(user),
+        token,
+        isAuthenticated: true
+      };
+    }
+    return {
+      user: null,
+      token: null,
+      isAuthenticated: false
+    };
+  } catch {
+    return {
+      user: null,
+      token: null,
+      isAuthenticated: false
+    };
+  }
+};
+
+const initialState = getPersistedUser();
+
 export const useAuthStore = create((set) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
+  user: initialState.user,
+  token: initialState.token,
+  isAuthenticated: initialState.isAuthenticated,
   isLoading: false,
   error: null,
 
-  login: (userData, token) =>
+  login: (userData, token) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    if(token) localStorage.setItem('token', token);
     set({
       user: userData,
       token,
       isAuthenticated: true,
       error: null
-    }),
+    });
+  },
 
-  logout: () =>
+  logout: () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     set({
       user: null,
       token: null,
       isAuthenticated: false
-    }),
+    });
+  },
 
-  setUser: (user) => set({ user }),
+  updateUser: (userData) => {
+    set((state) => ({ user: { ...state.user, ...userData } }));
+    localStorage.setItem('user', JSON.stringify({ ...initialState.user, ...userData }));
+  },
+
+  setUser: (user) => {
+    set({ user });
+    localStorage.setItem('user', JSON.stringify(user));
+  },
+
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   clearError: () => set({ error: null })

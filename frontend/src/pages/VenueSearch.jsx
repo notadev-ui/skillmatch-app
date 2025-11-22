@@ -2,8 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { venueService } from '../services/api';
 import { FaMapPin, FaStar, FaClock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import VenueDetail from './VenueDetail';
+
+import { useAuthStore } from '../store/store';
+import { useNavigate } from 'react-router-dom';
 
 const VenueSearch = () => {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!user) {
+      toast.error('Please login to access venues');
+      navigate('/login');
+      return;
+    }
+  }, [user, navigate]);
+
   const [venues, setVenues] = useState([]);
   const [filters, setFilters] = useState({
     type: '',
@@ -11,9 +26,13 @@ const VenueSearch = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Event details modal state
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+
   useEffect(() => {
-    fetchVenues();
-  }, [filters]);
+    if (user) fetchVenues();
+  }, [filters, user]);
 
   const fetchVenues = async () => {
     setIsLoading(true);
@@ -33,6 +52,16 @@ const VenueSearch = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const closeEventModal = () => {
+    setSelectedEventId(null);
+    setIsEventModalOpen(false);
+  };
+
+  const openEventModal = (eventId) => {
+    setSelectedEventId(eventId);
+    setIsEventModalOpen(true);
   };
 
   return (
@@ -126,7 +155,10 @@ const VenueSearch = () => {
                     </div>
                   </div>
 
-                  <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                  <button
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                    onClick={() => openEventModal(venue._id)}
+                  >
                     View Details
                   </button>
                 </div>
@@ -134,9 +166,13 @@ const VenueSearch = () => {
             ))}
           </div>
         )}
+        {isEventModalOpen && (
+          <VenueDetail id={selectedEventId} onClose={closeEventModal} />
+        )}
       </div>
     </div>
   );
 };
 
 export default VenueSearch;
+

@@ -1,19 +1,29 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/store';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GamesList from './pages/GamesList';
+import PlayerSearch from './pages/PlayerSearch';
+import VenueSearch from './pages/VenueSearch';
+import JobBoard from './pages/JobBoard';
+import ChatInterface from './pages/ChatInterface';
+import Profile from './pages/Profile';
 import './index.css';
+import ProfileDetail from './pages/ProfileDetail';
+import GameDetail from './pages/GameDetail';
+import EventDetail from './pages/EventDetail';
 
-function App() {
+function AppContent() {
   const { user, logout, login } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     logout();
+    navigate('/');
   };
 
   const handleLogin = (userData, token) => {
@@ -21,14 +31,30 @@ function App() {
   };
 
   return (
-    <Router>
+    <>
       <Navbar user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home user={user} />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register onLogin={handleLogin} />} />
         <Route path="/games" element={<GamesList />} />
+        <Route path="/players" element={<PlayerSearch />} />
+        <Route path="/venues" element={<VenueSearch />} />
+        <Route path="/jobs" element={<JobBoard />} />
+        <Route path="/chat" element={<ChatInterface />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:id" element={<ProfileDetail />} />
+        <Route path="/games/:id" element={<GameDetail />} />
+        <Route path="/events/:id" element={<EventDetail />} />
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

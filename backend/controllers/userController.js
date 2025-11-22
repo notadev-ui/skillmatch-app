@@ -24,21 +24,25 @@ exports.getUserProfile = async (req, res) => {
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
   try {
-    const { firstName, lastName, bio, location, skills, preferredSports, availableHours } =
-      req.body;
+    const { firstName, lastName, email, phone, city, userType, skills } = req.body;
+
+    const updateData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      userType,
+      skills,
+      updatedAt: Date.now()
+    };
+
+    if (city) {
+      updateData['location.city'] = city;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.userId,
-      {
-        firstName,
-        lastName,
-        bio,
-        location,
-        skills,
-        preferredSports,
-        availableHours,
-        updatedAt: Date.now()
-      },
+      updateData,
       { new: true }
     ).select('-password');
 

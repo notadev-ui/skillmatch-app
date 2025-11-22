@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { gameService } from '../services/api';
 import { FaCalendar, FaMapPin, FaUsers } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import GameDetail from './GameDetail';
 
 const GamesList = () => {
   const [games, setGames] = useState([]);
@@ -11,6 +12,10 @@ const GamesList = () => {
     status: 'Upcoming'
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // State for selected game modal
+  const [selectedGameId, setSelectedGameId] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const fetchGames = useCallback(async () => {
     setIsLoading(true);
@@ -34,6 +39,16 @@ const GamesList = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const openDetailModal = (id) => {
+    setSelectedGameId(id);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setSelectedGameId(null);
+    setIsDetailModalOpen(false);
   };
 
   return (
@@ -123,13 +138,19 @@ const GamesList = () => {
                     </span>
                   </div>
 
-                  <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                  <button
+                    onClick={() => openDetailModal(game._id)}
+                    className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  >
                     View Details
                   </button>
                 </div>
               </div>
             ))}
           </div>
+        )}
+        {isDetailModalOpen && (
+          <GameDetail id={selectedGameId} onClose={closeDetailModal} />
         )}
       </div>
     </div>

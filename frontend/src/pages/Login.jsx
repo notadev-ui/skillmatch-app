@@ -32,7 +32,9 @@ const Login = ({ onLogin }) => {
       onLogin(user, token);
 
       toast.success('Login successful!');
-      navigate('/');
+      const redirectTo = localStorage.getItem('redirectAfterLogin') || '/';
+      localStorage.removeItem('redirectAfterLogin');
+      navigate(redirectTo);
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);

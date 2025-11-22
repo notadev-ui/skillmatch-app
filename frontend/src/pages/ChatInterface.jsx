@@ -3,16 +3,30 @@ import { chatService } from '../services/api';
 import { FaPhone, FaVideo, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
-const ChatInterface = () => {
-  const [chatRooms, setChatRooms] = useState([]);
-  const [activeRoom, setActiveRoom] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+import { useAuthStore } from '../store/store';
+import { useNavigate } from 'react-router-dom';
 
-  useEffect(() => {
-    fetchChatRooms();
-  }, []);
+const ChatInterface = () => {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!user) {
+      toast.error('Please login to access chat');
+      navigate('/login');
+      return;
+    }
+  }, [user, navigate]);
+
+  const [chatRooms, setChatRooms] = React.useState([]);
+  const [activeRoom, setActiveRoom] = React.useState(null);
+  const [messages, setMessages] = React.useState([]);
+  const [newMessage, setNewMessage] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (user) fetchChatRooms();
+  }, [user]);
 
   const fetchChatRooms = async () => {
     try {
