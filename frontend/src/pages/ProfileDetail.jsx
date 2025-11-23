@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { userService } from '../services/api';
 import { toast } from 'react-toastify';
@@ -14,7 +13,7 @@ const ProfileDetail = ({ id, onClose }) => {
       setLoading(true);
       try {
         const response = await userService.getUserProfile(id);
-        setProfile(response.data);
+        setProfile(response.data.user); // Fixed here
       } catch (error) {
         toast.error('Failed to load profile.');
       } finally {
