@@ -8,13 +8,16 @@ const ProfileDetail = ({ id, onClose }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('ProfileDetail received id:', id);
     if (!id) return;
     const fetchProfile = async () => {
       setLoading(true);
       try {
         const response = await userService.getUserProfile(id);
+        console.log('ProfileDetail API response:', response);
         setProfile(response.data.user); // Fixed here
       } catch (error) {
+        console.error('ProfileDetail API error:', error);
         toast.error('Failed to load profile.');
       } finally {
         setLoading(false);
@@ -37,7 +40,20 @@ const ProfileDetail = ({ id, onClose }) => {
             {profile.profilePhoto && (
               <div className="flex justify-center mb-6">
                 <img
-                  src={profile.profilePhoto}
+                  src={
+                    profile.profilePhoto
+                      ? profile.profilePhoto.startsWith('http')
+                        ? profile.profilePhoto
+                        : (() => {
+                            const baseUrl =
+                              process.env.REACT_APP_BASE_URL ||
+                              (process.env.REACT_APP_API_URL
+                                ? process.env.REACT_APP_API_URL.replace(/\/api$/, '')
+                                : '');
+                            return `${baseUrl}${profile.profilePhoto}`;
+                          })()
+                      : ''
+                  }
                   alt={`${profile.firstName} ${profile.lastName}`}
                   className="w-32 h-32 rounded-full object-cover border-4 border-blue-600"
                 />
@@ -46,7 +62,7 @@ const ProfileDetail = ({ id, onClose }) => {
             <h1 className="text-3xl font-bold mb-4">{profile.firstName} {profile.lastName}</h1>
             <p className="mb-2"><strong>Email:</strong> {profile.email}</p>
             <p className="mb-2"><strong>Phone:</strong> {profile.phone}</p>
-            <p className="mb-2"><strong>City:</strong> {profile.city}</p>
+            <p className="mb-2"><strong>City:</strong> {profile.location?.city || 'N/A'}</p>
             <p className="mb-2"><strong>User Type:</strong> {profile.userType}</p>
             <div>
               <h2 className="text-xl font-semibold mb-2">Skills:</h2>

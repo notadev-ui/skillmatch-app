@@ -1,22 +1,125 @@
 const User = require('../models/User');
 
 // Get user profile by ID (for public/admin view)
+const mongoose = require('mongoose');
+
 exports.getUserProfile = async (req, res) => {
   try {
+    // Validate userId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    // Use lean() to get plain JavaScript object and avoid serialization issues
     const user = await User.findById(req.params.userId)
-      .populate('teams', 'name logo sportType')
-      .select('-password');
+      .select('-password')
+      .lean();
+
+    console.log("User found in DB:", user); // Added debug log
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Ensure ratings object exists with defaults
+    if (!user.ratings) {
+      user.ratings = {
+        average: 0,
+        count: 0
+      };
+    }
+
+    // Ensure ratings.average and ratings.count are numbers
+    if (typeof user.ratings.average !== 'number') {
+      user.ratings.average = 0;
+    }
+    if (typeof user.ratings.count !== 'number') {
+      user.ratings.count = 0;
+    }
+
+    // Convert _id to string to ensure proper serialization
+    if (user._id) {
+      user._id = user._id.toString();
+    }
+
+    // Ensure skills array exists
+    if (!Array.isArray(user.skills)) {
+      user.skills = [];
+    }
+
+    // Convert Date objects to ISO strings for proper JSON serialization
+    if (user.createdAt && user.createdAt instanceof Date) {
+      user.createdAt = user.createdAt.toISOString();
+    }
+    if (user.updatedAt && user.updatedAt instanceof Date) {
+      user.updatedAt = user.updatedAt.toISOString();
+    }
+
+    // Handle badges array with Date fields
+    if (Array.isArray(user.badges)) {
+      user.badges = user.badges.map(badge => {
+        if (badge.earnedDate && badge.earnedDate instanceof Date) {
+          return { ...badge, earnedDate: badge.earnedDate.toISOString() };
+        }
+        return badge;
+      });
+    }
+
+    // Ensure location coordinates are properly formatted
+    if (user.location && user.location.coordinates) {
+      if (user.location.coordinates.type && typeof user.location.coordinates.type === 'object') {
+        // If type is an object (Mongoose schema type), convert to string
+        user.location.coordinates.type = 'Point';
+      }
+      // Ensure coordinates array is properly formatted
+      if (Array.isArray(user.location.coordinates.coordinates)) {
+        user.location.coordinates.coordinates = user.location.coordinates.coordinates.map(coord => 
+          typeof coord === 'object' && coord !== null ? coord.toString() : coord
+        );
+      }
+    }
+
+    // Convert teams ObjectId references to strings
+    if (Array.isArray(user.teams)) {
+      user.teams = user.teams.map(team => {
+        if (team && typeof team === 'object' && team._id) {
+          return team._id.toString();
+        }
+        return team ? team.toString() : team;
+      });
+    }
+
+    // Convert any remaining ObjectId fields to strings
+    const convertObjectIds = (obj) => {
+      if (obj === null || obj === undefined) return obj;
+      if (obj instanceof mongoose.Types.ObjectId) {
+        return obj.toString();
+      }
+      if (Array.isArray(obj)) {
+        return obj.map(item => convertObjectIds(item));
+      }
+      if (typeof obj === 'object') {
+        const converted = {};
+        for (const key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            converted[key] = convertObjectIds(obj[key]);
+          }
+        }
+        return converted;
+      }
+      return obj;
+    };
+
+    // Final conversion pass
+    const cleanedUser = convertObjectIds(user);
+
     res.status(200).json({
       message: 'User profile retrieved',
-      user
+      user: cleanedUser
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error in getUserProfile:', error);
+    console.error(error.stack);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

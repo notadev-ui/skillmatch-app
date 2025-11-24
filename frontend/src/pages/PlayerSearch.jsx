@@ -132,8 +132,12 @@ const PlayerSearch = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex items-center gap-1">
                         <FaStar className="text-yellow-500" />
-                        <span className="font-semibold">{player.ratings.average.toFixed(1)}</span>
-                        <span className="text-gray-500">({player.ratings.count} reviews)</span>
+                        <span className="font-semibold">
+                          {player.ratings?.average?.toFixed(1) || '0.0'}
+                        </span>
+                        <span className="text-gray-500">
+                          ({player.ratings?.count || 0} reviews)
+                        </span>
                       </div>
                       {player.location?.city && (
                         <div className="flex items-center gap-1 text-gray-600">

@@ -22,13 +22,20 @@ router.get('/search', searchUsers);
 // Find users near a location (geo-query)
 router.get('/nearby', getUsersNearLocation);
 
-// Get user profile by userId (public)
+// Get user profile by userId (public) - must be after specific routes
 router.get('/:userId', getUserProfile);
 
 
 /* -------------------------
    🔐 PROTECTED ROUTES
 -------------------------- */
+
+// Get current user profile (must be before /:userId to avoid conflicts)
+router.get('/me', authenticate, (req, res) => {
+  res.status(200).json({
+    user: req.user
+  });
+});
 
 // Update logged-in user's profile
 router.put('/profile', authenticate, updateUserProfile);
@@ -38,11 +45,5 @@ router.post('/skill', authenticate, addSkill);
 
 // Admin/manager can get all users
 router.get('/', authenticate, getAllUsers);
-
-router.get('/me', authenticate, (req, res) => {
-  res.status(200).json({
-    user: req.user
-  });
-});
 
 module.exports = router;

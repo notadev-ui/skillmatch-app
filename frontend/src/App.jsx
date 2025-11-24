@@ -14,7 +14,7 @@ import Profile from './pages/Profile';
 import './index.css';
 import ProfileDetail from './pages/ProfileDetail';
 import GameDetail from './pages/GameDetail';
-import EventDetail from './pages/EventDetail';
+import VenueDetail from './pages/VenueDetail';
 
 function AppContent() {
   const { user, logout, login } = useAuthStore();
@@ -45,7 +45,7 @@ function AppContent() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:id" element={<ProfileDetail />} />
         <Route path="/games/:id" element={<GameDetail />} />
-        <Route path="/events/:id" element={<EventDetail />} />
+        <Route path="/venues/:id" element={<VenueDetail />} />
       </Routes>
     </>
   );
