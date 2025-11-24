@@ -113,6 +113,26 @@ exports.getUserProfile = async (req, res) => {
     // Final conversion pass
     const cleanedUser = convertObjectIds(user);
 
+    // Ensure profilePhoto is always a string (not an object or null)
+    if (cleanedUser.profilePhoto !== null && cleanedUser.profilePhoto !== undefined) {
+      if (typeof cleanedUser.profilePhoto !== 'string') {
+        // If it's an object, try to extract URL or convert to string
+        if (typeof cleanedUser.profilePhoto === 'object') {
+          cleanedUser.profilePhoto = cleanedUser.profilePhoto.url || cleanedUser.profilePhoto.toString() || '';
+        } else {
+          cleanedUser.profilePhoto = String(cleanedUser.profilePhoto);
+        }
+      }
+      // Trim whitespace
+      cleanedUser.profilePhoto = cleanedUser.profilePhoto.trim();
+      // If empty string after trim, set to null
+      if (cleanedUser.profilePhoto === '') {
+        cleanedUser.profilePhoto = null;
+      }
+    } else {
+      cleanedUser.profilePhoto = null;
+    }
+
     res.status(200).json({
       message: 'User profile retrieved',
       user: cleanedUser
@@ -154,7 +174,17 @@ exports.updateUserProfile = async (req, res) => {
     if (phone !== undefined) updateData.phone = phone;
     if (userType !== undefined) updateData.userType = userType;
     if (skills !== undefined) updateData.skills = skills;
-    if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
+    // Ensure profilePhoto is always a string
+    if (profilePhoto !== undefined) {
+      if (typeof profilePhoto === 'string') {
+        updateData.profilePhoto = profilePhoto.trim() || null;
+      } else if (profilePhoto === null) {
+        updateData.profilePhoto = null;
+      } else {
+        // If it's an object, try to extract URL or convert to string
+        updateData.profilePhoto = profilePhoto.url || String(profilePhoto) || null;
+      }
+    }
     if (bio !== undefined) updateData.bio = bio;
     if (preferredSports !== undefined) updateData.preferredSports = preferredSports;
 
@@ -173,10 +203,60 @@ exports.updateUserProfile = async (req, res) => {
       req.userId,       // set by your auth middleware
       updateData,
       { new: true }
-    ).select('-password');
+    )
+      .select('-password')
+      .lean(); // Use lean() to get plain object
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Ensure ratings object exists with defaults
+    if (!user.ratings) {
+      user.ratings = {
+        average: 0,
+        count: 0
+      };
+    }
+
+    // Ensure ratings.average and ratings.count are numbers
+    if (typeof user.ratings.average !== 'number') {
+      user.ratings.average = 0;
+    }
+    if (typeof user.ratings.count !== 'number') {
+      user.ratings.count = 0;
+    }
+
+    // Convert _id to string
+    if (user._id) {
+      user._id = user._id.toString();
+    }
+
+    // Ensure profilePhoto is always a string
+    if (user.profilePhoto !== null && user.profilePhoto !== undefined) {
+      if (typeof user.profilePhoto !== 'string') {
+        if (typeof user.profilePhoto === 'object') {
+          user.profilePhoto = user.profilePhoto.url || user.profilePhoto.toString() || null;
+        } else {
+          user.profilePhoto = String(user.profilePhoto);
+        }
+      }
+      user.profilePhoto = user.profilePhoto.trim() || null;
+    } else {
+      user.profilePhoto = null;
+    }
+
+    // Convert Date objects to ISO strings
+    if (user.createdAt && user.createdAt instanceof Date) {
+      user.createdAt = user.createdAt.toISOString();
+    }
+    if (user.updatedAt && user.updatedAt instanceof Date) {
+      user.updatedAt = user.updatedAt.toISOString();
+    }
+
+    // Ensure skills array exists
+    if (!Array.isArray(user.skills)) {
+      user.skills = [];
     }
 
     res.status(200).json({
