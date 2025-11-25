@@ -55,7 +55,7 @@ const Home = ({ user }) => {
       w-full 
       h-[60vh] md:h-[92vh]
       object-cover 
-      object-right md:object-right
+      object-[70%]  md:object-right
     "
   />
 
