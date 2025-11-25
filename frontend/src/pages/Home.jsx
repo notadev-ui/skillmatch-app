@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearch, FaCalendar, FaBriefcase, FaStar, FaUsers, FaMapPin } from 'react-icons/fa';
-import SkillmatchBanner from "../assets/images/Skillmatch-Banner.png";
+import SkillmatchBanner from "../assets/images/skillMatch_Banner.png";
 
 const Home = ({ user }) => {
   const features = [
@@ -51,31 +51,43 @@ const Home = ({ user }) => {
   <img
     src={SkillmatchBanner}
     alt="SkillMatch Banner"
-    className="w-full h-[85vh] object-cover"
+    className="
+      w-full 
+      h-[60vh] md:h-[92vh]
+      object-cover 
+      object-right md:object-right
+    "
   />
 
-  {/* Text Overlay */}
-  <div className="absolute inset-0 flex flex-col items-center justify-center text-Navy text-center bg-black/10">
-    <p className="text-xl mb-8 max-w-2xl">
-      Find skilled players, venues, and opportunities in your local sports community
-    </p>
-
-    <div className="flex gap-4 justify-center margin-top: 800px;">
+  {/* Content Overlay */}
+  <div
+    className="
+      absolute inset-0 
+      flex flex-col 
+      justify-end    
+      items-center 
+      text-center 
+      pb-10
+    "
+  >
+    <div className="flex gap-12 justify-center">
       <Link
         to="/games"
-        className="bg-green-500 px-8 py-3 rounded-lg hover:bg-green-600 font-semibold"
+        className="bg-gray-900 px-8 py-3 rounded-lg hover:bg-gray-800 font-semibold text-white"
       >
         Find Games
       </Link>
+
       <Link
         to="/players"
-        className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-100 font-semibold"
+        className="bg-blue-500 px-8 py-3 rounded-lg hover:bg-blue-600 font-semibold"
       >
         Find Players
       </Link>
     </div>
   </div>
 </section>
+
 
 
       {/* Features Section */}

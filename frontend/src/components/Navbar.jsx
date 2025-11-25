@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaUsers, FaMapPin, FaCalendar, FaBriefcase, FaComments, FaUser, FaBars, FaTimes } from 'react-icons/fa';
+import skillmatchLogo from "../assets/images/skillmatch_Logo.png";
 
 const Navbar = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,9 +13,14 @@ const Navbar = ({ user, onLogout }) => {
   return (
     <nav className="bg-blue-600 text-white p-4 shadow-lg">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold">
-          SkillMatch
+        <Link to="/" className="flex items-center">
+        <img
+         src={skillmatchLogo}
+         alt="SkillMatch Logo"
+         className="h-14 w-auto object-contain rounded-md"/>
+         <p className="text-2xl font-bold">SkillMatch</p >
         </Link>
+      
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex gap-6 items-center">
