@@ -24,7 +24,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@msg.com',
         contactPhone: '+1-212-465-6741',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1500
       },
       {
         name: 'Staples Center',
@@ -41,7 +42,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@staplescenter.com',
         contactPhone: '+1-213-742-7100',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1400
       },
       {
         name: 'United Center',
@@ -58,7 +60,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@unitedcenter.com',
         contactPhone: '+1-312-455-4500',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1300
       },
       {
         name: 'American Airlines Arena',
@@ -75,7 +78,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@aaarena.com',
         contactPhone: '+1-786-777-1000',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1200
       },
       {
         name: 'TD Garden',
@@ -92,7 +96,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@tdgarden.com',
         contactPhone: '+1-617-624-1000',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1250
       },
       {
         name: 'Chase Field',
@@ -109,7 +114,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@chasefield.com',
         contactPhone: '+1-602-462-6500',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1100
       },
       {
         name: 'Climate Pledge Arena',
@@ -126,7 +132,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@climatepledgearena.com',
         contactPhone: '+1-206-428-8000',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1350
       },
       {
         name: 'Ball Arena',
@@ -143,7 +150,8 @@ async function addSampleVenues() {
         },
         contactEmail: 'info@ballarena.com',
         contactPhone: '+1-303-405-1100',
-        manager: '507f1f77bcf86cd799439011'
+        manager: '507f1f77bcf86cd799439011',
+        pricePerHour: 1150
       }
     ];
 

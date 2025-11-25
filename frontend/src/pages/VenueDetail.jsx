@@ -39,7 +39,7 @@ const VenueDetail = ({ id, onClose }) => {
             <p className="mb-2"><strong>Location:</strong> {venue.location?.address || 'N/A'}</p>
             <p className="mb-2"><strong>City:</strong> {venue.location?.city || 'N/A'}</p>
             <p className="mb-2"><strong>Type:</strong> {venue.type}</p>
-            <p className="mb-2"><strong>Price Per Hour:</strong> ${venue.pricePerHour}</p>
+            <p className="mb-2"><strong>Price Per Hour:</strong> ₹{venue.pricePerHour}</p>
             {/* Add more venue details here as needed */}
           </div>
         </div>

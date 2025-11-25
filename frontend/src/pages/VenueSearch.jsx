@@ -137,7 +137,7 @@ const VenueSearch = () => {
 
                     <p className="flex items-center gap-2">
                       <FaClock className="text-green-600" />
-                      ${venue.pricePerHour}/hour
+                      ₹{venue.pricePerHour}/hour
                     </p>
                   </div>
 
