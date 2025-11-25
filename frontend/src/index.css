@@ -17,6 +17,17 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Make media responsive by default */
+img, svg, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure long text doesn't overflow in flex/grid children */
+.min-w-0 {
+  min-width: 0;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
