@@ -19,6 +19,7 @@ import Footer from './components/Footer';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import Contact from './pages/Contact';
+import ScrollToTop from './components/ScrollToTop';
 
 function AppContent() {
   const { user, logout, login } = useAuthStore();
@@ -61,6 +62,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AppContent />
       <Footer />
     </Router>
