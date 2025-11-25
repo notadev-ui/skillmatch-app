@@ -47,45 +47,47 @@ const Home = ({ user }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <section className="relative w-full">
-        {/* Banner Image */}
-        <div className="relative w-full h-[50vh] md:h-[92vh]">
-          <img
-            src={SkillmatchBanner}
-            alt="SkillMatch Banner"
-            className="w-full h-full object-cover object-center md:object-right"
-          />
-          {/* Overlay gradient for better text readability on mobile */}
-          <div className="absolute inset-0 bg-black/30 md:bg-transparent"></div>
-        </div>
 
-        {/* Content Overlay */}
-        <div
-          className="
-            absolute inset-0 
-            flex flex-col 
-            justify-center md:justify-end    
-            items-center 
-            text-center 
-            pb-10
-          "
-        >
-          <div className="flex flex-col md:flex-row gap-4 md:gap-12 justify-center w-full px-4">
-            <Link
-              to="/games"
-              className="bg-gray-900 px-8 py-3 rounded-lg hover:bg-gray-800 font-semibold text-white w-full md:w-auto max-w-xs mx-auto md:mx-0"
-            >
-              Find Games
-            </Link>
+  <img
+    src={SkillmatchBanner}
+    alt="SkillMatch Banner"
+    className="
+      w-full 
+      h-[60vh] md:h-[92vh]
+      object-cover 
+      object-[70%]     
+      md:object-right 
+    "
+  />
 
-            <Link
-              to="/players"
-              className="bg-blue-500 px-8 py-3 rounded-lg hover:bg-blue-600 font-semibold text-white w-full md:w-auto max-w-xs mx-auto md:mx-0"
-            >
-              Find Players
-            </Link>
-          </div>
-        </div>
-      </section>
+  <div
+    className="
+      absolute inset-0 
+      flex flex-col 
+      justify-end
+      items-center 
+      text-center 
+      pb-10
+    "
+  >
+    <div className="flex gap-4 justify-center">
+      <Link
+        to="/games"
+        className="bg-black px-8 py-3 rounded-lg hover:bg-gray-900 font-semibold text-white"
+      >
+        Find Games
+      </Link>
+
+      <Link
+        to="/players"
+        className="bg-blue-500 px-8 py-3 rounded-lg hover:bg-blue-600 font-semibold text-white"
+      >
+        Find Players
+      </Link>
+    </div>
+  </div>
+</section>
+
 
 
 
