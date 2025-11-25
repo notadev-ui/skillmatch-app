@@ -114,7 +114,7 @@ const Home = ({ user }) => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-800 text-white py-16">
+      <section className="text-gray-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
           <p className="text-lg mb-8">

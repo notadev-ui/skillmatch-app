@@ -15,6 +15,10 @@ import './index.css';
 import ProfileDetail from './pages/ProfileDetail';
 import GameDetail from './pages/GameDetail';
 import VenueDetail from './pages/VenueDetail';
+import Footer from './components/Footer';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Contact from './pages/Contact';
 
 function AppContent() {
   const { user, logout, login } = useAuthStore();
@@ -46,6 +50,9 @@ function AppContent() {
         <Route path="/profile/:id" element={<ProfileDetail />} />
         <Route path="/games/:id" element={<GameDetail />} />
         <Route path="/venues/:id" element={<VenueDetail />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
     </>
   );
@@ -55,6 +62,7 @@ function App() {
   return (
     <Router>
       <AppContent />
+      <Footer />
     </Router>
   );
 }
