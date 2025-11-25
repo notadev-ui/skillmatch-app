@@ -38,6 +38,18 @@ app.use('/api/jobs', require('./routes/jobRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 
+// Health endpoint (includes DB connection state)
+app.get('/api/health', (req, res) => {
+  const states = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  const state = mongoose.connection.readyState;
+  res.json({ dbState: state, dbStatus: states[state] || 'unknown' });
+});
+
 // Socket.IO Events
 io.on('connection', (socket) => {
   console.log('New user connected:', socket.id);
