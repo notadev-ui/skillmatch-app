@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { userService } from '../services/api';
 import { FaStar, FaMapPin } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import ProfileDetail from './ProfileDetail';
+import { useNavigate } from 'react-router-dom';
 
 const PlayerSearch = () => {
   const [players, setPlayers] = useState([]);
@@ -11,8 +11,7 @@ const PlayerSearch = () => {
     city: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedProfileId, setSelectedProfileId] = useState(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAllPlayers();
@@ -53,14 +52,8 @@ const PlayerSearch = () => {
     }));
   };
 
-  const openProfileModal = (id) => {
-    setSelectedProfileId(id);
-    setIsProfileModalOpen(true);
-  };
-
-  const closeProfileModal = () => {
-    setSelectedProfileId(null);
-    setIsProfileModalOpen(false);
+  const goToProfilePage = (id) => {
+    navigate(`/profile/${id}`);
   };
 
   return (
@@ -162,7 +155,7 @@ const PlayerSearch = () => {
                     </div>
 
                     <button
-                      onClick={() => openProfileModal(player._id)}
+                      onClick={() => goToProfilePage(player._id)}
                       className="mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition"
                     >
                       View Profile
@@ -173,9 +166,7 @@ const PlayerSearch = () => {
             ))}
           </div>
         )}
-        {isProfileModalOpen && (
-          <ProfileDetail id={selectedProfileId} onClose={closeProfileModal} />
-        )}
+        {/* Profile viewed as a full page via route; no modal here */}
       </div>
     </div>
   );
