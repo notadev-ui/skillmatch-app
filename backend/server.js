@@ -17,7 +17,26 @@ const io = new Server(httpServer, {
 });
 
 const corsOptions = {
-  origin: '*'
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins for now, or specify your frontend URL
+    // For production, you might want to restrict this:
+    // const allowedOrigins = ['https://skillmatch-app.vercel.app', 'http://localhost:3000'];
+    // if (allowedOrigins.indexOf(origin) !== -1) {
+    //   callback(null, true);
+    // } else {
+    //   callback(new Error('Not allowed by CORS'));
+    // }
+    callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false, // Set to true if you need to send cookies
+  preflightContinue: false,
+  optionsSuccessStatus: 204 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 // Middleware

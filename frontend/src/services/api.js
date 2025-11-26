@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// Use environment variable or fallback to localhost
-const API_BASE_URL = process.env.REACT_APP_API_URL|| 'http://localhost:5000/api';
+const API_BASE_URL =process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -22,14 +21,12 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* ---------- Auth Service ---------- */
 export const authService = {
   register: (userData) => apiClient.post('/auth/register', userData),
   login: (credentials) => apiClient.post('/auth/login', credentials),
   getCurrentUser: () => apiClient.get('/auth/me')
 };
 
-/* ---------- User Service ---------- */
 export const userService = {
   getUserProfile: (userId) => apiClient.get(`/users/${userId}`),
   updateProfile: (userData) => apiClient.put('/users/profile', userData),
@@ -38,7 +35,6 @@ export const userService = {
   addSkill: (skillData) => apiClient.post('/users/skill', skillData)
 };
 
-/* ---------- Venue Service ---------- */
 export const venueService = {
   getAllVenues: (params) => apiClient.get('/venues', { params }),
   getVenueById: (venueId) => apiClient.get(`/venues/${venueId}`),
@@ -47,7 +43,6 @@ export const venueService = {
   getVenuesNearLocation: (params) => apiClient.get('/venues/nearby', { params })
 };
 
-/* ---------- Game Service ---------- */
 export const gameService = {
   getAllGames: (params) => apiClient.get('/games', { params }),
   getGameById: (gameId) => apiClient.get(`/games/${gameId}`),
@@ -58,7 +53,6 @@ export const gameService = {
   updateGameStatus: (gameId, status) => apiClient.put(`/games/${gameId}/status`, { status })
 };
 
-/* ---------- Job Service ---------- */
 export const jobService = {
   getAllJobs: (params) => apiClient.get('/jobs', { params }),
   getJobById: (jobId) => apiClient.get(`/jobs/${jobId}`),
@@ -71,7 +65,6 @@ export const jobService = {
   closeJob: (jobId) => apiClient.put(`/jobs/${jobId}/close`)
 };
 
-/* ---------- Chat Service ---------- */
 export const chatService = {
   getOrCreateChatRoom: (data) => apiClient.post('/chat/room', data),
   getChatMessages: (roomId) => apiClient.get(`/chat/room/${roomId}`),
@@ -80,7 +73,6 @@ export const chatService = {
   createGroupChat: (data) => apiClient.post('/chat/group', data)
 };
 
-/* ---------- Review Service ---------- */
 export const reviewService = {
   createReview: (reviewData) => apiClient.post('/reviews', reviewData),
   getUserReviews: (userId) => apiClient.get(`/reviews/user/${userId}`),
