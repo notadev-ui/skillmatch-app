@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaUsers, FaMapPin, FaCalendar, FaBriefcase, FaComments, FaUser, FaBars, FaTimes } from 'react-icons/fa';
+import skillmatchLogo from "../assets/images/skillmatch_Logo.png";
 
 const Navbar = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,11 +11,16 @@ const Navbar = ({ user, onLogout }) => {
   };
 
   return (
-    <nav className="bg-blue-600 text-white p-4 shadow-lg">
+    <nav className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-gray-100 p-4 shadow-lg">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold">
-          SkillMatch
+        <Link to="/" className="flex items-center">
+        <img
+         src={skillmatchLogo}
+         alt="SkillMatch Logo"
+         className="h-14 w-auto object-contain rounded-md"/>
+         <p className="text-2xl font-bold text-gray-100">SkillMatch</p >
         </Link>
+      
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex gap-6 items-center">
@@ -47,19 +53,19 @@ const Navbar = ({ user, onLogout }) => {
           {user ? (
             <>
               <li>
-                <Link to="/games" className="flex items-center gap-2 hover:text-blue-200">
+                <Link to="/games" className="flex items-center gap-2 hover:text-slate-200">
                   <FaCalendar /> Games
                 </Link>
               </li>
               <li>
-                <Link to="/profile" className="flex items-center gap-2 hover:text-blue-200">
+                <Link to="/profile" className="flex items-center gap-2 hover:text-slate-200">
                   <FaUser /> Profile
                 </Link>
               </li>
               <li>
                 <button
                   onClick={onLogout}
-                  className="bg-red-500 px-4 py-2 rounded hover:bg-red-600"
+                  className="bg-red-600 bg-opacity-90 px-4 py-2 rounded hover:bg-red-700"
                 >
                   Logout
                 </button>
@@ -68,12 +74,12 @@ const Navbar = ({ user, onLogout }) => {
           ) : (
             <>
               <li>
-                <Link to="/login" className="hover:text-blue-200">
+                <Link to="/login" className="hover:text-slate-200">
                   Login
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="bg-green-500 px-4 py-2 rounded hover:bg-green-600">
+                <Link to="/register" className="bg-green-600 bg-opacity-90 px-4 py-2 rounded hover:bg-green-700">
                   Register
                 </Link>
               </li>
@@ -83,7 +89,7 @@ const Navbar = ({ user, onLogout }) => {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white focus:outline-none"
+          className="md:hidden text-gray-100 focus:outline-none"
           onClick={toggleMenu}
         >
           {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
@@ -92,7 +98,7 @@ const Navbar = ({ user, onLogout }) => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-blue-600 border-t border-blue-500">
+        <div className="md:hidden bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 border-t border-slate-700">
           <ul className="flex flex-col gap-4 p-4">
             <li>
               <Link to="/" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
@@ -100,22 +106,22 @@ const Navbar = ({ user, onLogout }) => {
               </Link>
             </li>
             <li>
-              <Link to="/players" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
+              <Link to="/players" className="flex items-center gap-2 hover:text-slate-200" onClick={toggleMenu}>
                 <FaUsers /> Players
               </Link>
             </li>
             <li>
-              <Link to="/venues" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
+              <Link to="/venues" className="flex items-center gap-2 hover:text-slate-200" onClick={toggleMenu}>
                 <FaMapPin /> Venues
               </Link>
             </li>
             <li>
-              <Link to="/jobs" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
+              <Link to="/jobs" className="flex items-center gap-2 hover:text-slate-200" onClick={toggleMenu}>
                 <FaBriefcase /> Jobs
               </Link>
             </li>
             <li>
-              <Link to="/chat" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
+              <Link to="/chat" className="flex items-center gap-2 hover:text-slate-200" onClick={toggleMenu}>
                 <FaComments /> Chat
               </Link>
             </li>
@@ -123,36 +129,36 @@ const Navbar = ({ user, onLogout }) => {
             {user ? (
               <>
                 <li>
-                  <Link to="/games" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
+                  <Link to="/games" className="flex items-center gap-2 hover:text-slate-200" onClick={toggleMenu}>
                     <FaCalendar /> Games
                   </Link>
                 </li>
                 <li>
-                  <Link to="/profile" className="flex items-center gap-2 hover:text-blue-200" onClick={toggleMenu}>
+                    <Link to="/profile" className="flex items-center gap-2 hover:text-slate-200" onClick={toggleMenu}>
                     <FaUser /> Profile
                   </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => {
-                      onLogout();
-                      toggleMenu();
-                    }}
-                    className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 w-full text-left"
-                  >
-                    Logout
-                  </button>
+                    <button
+                      onClick={() => {
+                        onLogout();
+                        toggleMenu();
+                      }}
+                      className="bg-red-600 bg-opacity-90 px-4 py-2 rounded hover:bg-red-700 w-full text-left"
+                    >
+                      Logout
+                    </button>
                 </li>
               </>
             ) : (
               <>
                 <li>
-                  <Link to="/login" className="hover:text-blue-200" onClick={toggleMenu}>
+                    <Link to="/login" className="hover:text-slate-200" onClick={toggleMenu}>
                     Login
                   </Link>
                 </li>
                 <li>
-                  <Link to="/register" className="bg-green-500 px-4 py-2 rounded hover:bg-green-600 inline-block" onClick={toggleMenu}>
+                    <Link to="/register" className="bg-green-600 bg-opacity-90 px-4 py-2 rounded hover:bg-green-700 inline-block" onClick={toggleMenu}>
                     Register
                   </Link>
                 </li>

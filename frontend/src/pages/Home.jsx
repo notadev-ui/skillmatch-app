@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaSearch, FaCalendar, FaBriefcase, FaStar, FaUsers, FaMapPin } from 'react-icons/fa';
-import SkillmatchBanner from "../assets/images/Skillmatch-Banner.png";
+import SkillmatchBanner from "../assets/images/skillMatch_Banner.png";
 
 const Home = ({ user }) => {
   const features = [
@@ -46,36 +46,47 @@ const Home = ({ user }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-    <section className="relative w-full">
-  {/* Banner Image */}
-  <img
-    src={SkillmatchBanner}
-    alt="SkillMatch Banner"
-    className="w-full h-[85vh] object-cover"
-  />
+      <section className="relative w-full">
+        {/* Banner Image */}
+        <div className="relative w-full h-[50vh] md:h-[92vh]">
+          <img
+            src={SkillmatchBanner}
+            alt="SkillMatch Banner"
+            className="w-full h-full object-cover object-center md:object-right"
+          />
+          {/* Overlay gradient for better text readability on mobile */}
+          <div className="absolute inset-0 bg-black/30 md:bg-transparent"></div>
+        </div>
 
-  {/* Text Overlay */}
-  <div className="absolute inset-0 flex flex-col items-center justify-center text-Navy text-center bg-black/10">
-    <p className="text-xl mb-8 max-w-2xl">
-      Find skilled players, venues, and opportunities in your local sports community
-    </p>
+        {/* Content Overlay */}
+        <div
+          className="
+            absolute inset-0 
+            flex flex-col 
+            justify-center md:justify-end    
+            items-center 
+            text-center 
+            pb-10
+          "
+        >
+          <div className="flex flex-col md:flex-row gap-4 md:gap-12 justify-center w-full px-4">
+            <Link
+              to="/games"
+              className="bg-gray-900 px-8 py-3 rounded-lg hover:bg-gray-800 font-semibold text-white w-full md:w-auto max-w-xs mx-auto md:mx-0"
+            >
+              Find Games
+            </Link>
 
-    <div className="flex gap-4 justify-center margin-top: 800px;">
-      <Link
-        to="/games"
-        className="bg-green-500 px-8 py-3 rounded-lg hover:bg-green-600 font-semibold"
-      >
-        Find Games
-      </Link>
-      <Link
-        to="/players"
-        className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-100 font-semibold"
-      >
-        Find Players
-      </Link>
-    </div>
-  </div>
-</section>
+            <Link
+              to="/players"
+              className="bg-blue-500 px-8 py-3 rounded-lg hover:bg-blue-600 font-semibold text-white w-full md:w-auto max-w-xs mx-auto md:mx-0"
+            >
+              Find Players
+            </Link>
+          </div>
+        </div>
+      </section>
+
 
 
       {/* Features Section */}
@@ -102,7 +113,7 @@ const Home = ({ user }) => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-800 text-white py-16">
+      <section className="text-gray-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
           <p className="text-lg mb-8">
