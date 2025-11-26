@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { jobService } from '../services/api';
-import { FaBriefcase, FaMapPin, FaDollarSign } from 'react-icons/fa';
+import { FaBriefcase, FaMapPin, FaRupeeSign } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const JobBoard = () => {
@@ -138,8 +138,8 @@ const JobBoard = () => {
                       {job.location}
                     </p>
                     <p className="flex items-center gap-2">
-                      <FaDollarSign className="text-green-600" />
-                      ${job.salary?.min} - ${job.salary?.max} {job.salary?.currency}
+                      <FaRupeeSign className="text-green-600" />
+                      ₹{job.salary?.min} - ₹{job.salary?.max} {job.salary?.currency}
                     </p>
                   </div>
 
@@ -205,7 +205,7 @@ const JobBoard = () => {
                       <h3 className="font-semibold mb-2">Job Details</h3>
                       <p><strong>Type:</strong> {selectedJob.jobType}</p>
                       <p><strong>Location:</strong> {selectedJob.location}</p>
-                      <p><strong>Salary:</strong> ${selectedJob.salary?.min} - ${selectedJob.salary?.max} {selectedJob.salary?.currency}</p>
+                      <p><strong>Salary:</strong> ₹{selectedJob.salary?.min} - ₹{selectedJob.salary?.max} {selectedJob.salary?.currency}</p>
                       <p><strong>Posted:</strong> {new Date(selectedJob.createdAt).toLocaleDateString()}</p>
                     </div>
 
