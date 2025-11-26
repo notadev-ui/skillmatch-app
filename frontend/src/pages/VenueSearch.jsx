@@ -26,9 +26,7 @@ const VenueSearch = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Event details modal state
-  const [selectedEventId, setSelectedEventId] = useState(null);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  // Event details were previously shown in a modal; now routed page.
 
   useEffect(() => {
     if (user) fetchVenues();
@@ -54,14 +52,10 @@ const VenueSearch = () => {
     }));
   };
 
-  const closeEventModal = () => {
-    setSelectedEventId(null);
-    setIsEventModalOpen(false);
-  };
+  // Details now open via route: /venues/:id
 
-  const openEventModal = (eventId) => {
-    setSelectedEventId(eventId);
-    setIsEventModalOpen(true);
+  const goToBooking = (venueId) => {
+    navigate(`/venues/${venueId}?book=1`);
   };
 
   return (
@@ -155,19 +149,24 @@ const VenueSearch = () => {
                     </div>
                   </div>
 
-                  <button
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                    onClick={() => openEventModal(venue._id)}
-                  >
-                    View Details
-                  </button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      className="bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                      onClick={() => navigate(`/venues/${venue._id}`)}
+                    >
+                      View Details
+                    </button>
+                    <button
+                      className="bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+                      onClick={() => goToBooking(venue._id)}
+                    >
+                      Book
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        )}
-        {isEventModalOpen && (
-          <VenueDetail id={selectedEventId} onClose={closeEventModal} />
         )}
       </div>
     </div>

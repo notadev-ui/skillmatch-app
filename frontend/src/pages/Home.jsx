@@ -1,9 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaCalendar, FaBriefcase, FaStar, FaUsers, FaMapPin } from 'react-icons/fa';
+import { FaSearch, FaCalendar, FaBriefcase, FaStar, FaUsers, FaMapPin, FaClock, FaMapMarkerAlt, FaRupeeSign } from 'react-icons/fa';
 import SkillmatchBanner from "../assets/images/skillMatch_Banner.png";
+import { gameService, jobService } from '../services/api';
 
 const Home = ({ user }) => {
+  const [upcomingGames, setUpcomingGames] = useState([]);
+  const [featuredJobs, setFeaturedJobs] = useState([]);
+  const [loading, setLoading] = useState({ games: false, jobs: false });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading({ games: true, jobs: true });
+      try {
+        const [gamesRes, jobsRes] = await Promise.all([
+          gameService.getAllGames({ status: 'Upcoming', limit: 6 }).catch(() => ({ data: { games: [] } })),
+          jobService.getAllJobs({ status: 'Open', limit: 6 }).catch(() => ({ data: { jobs: [] } }))
+        ]);
+        setUpcomingGames(gamesRes.data.games || gamesRes.data || []);
+        setFeaturedJobs(jobsRes.data.jobs || jobsRes.data || []);
+      } finally {
+        setLoading({ games: false, jobs: false });
+      }
+    };
+    fetchData();
+  }, []);
+
   const features = [
     {
       Icon: FaSearch,
@@ -88,8 +110,47 @@ const Home = ({ user }) => {
   </div>
 </section>
 
+      {/* Upcoming Games */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold">Upcoming Games</h2>
+            <Link to="/games" className="text-blue-600 hover:underline">View all</Link>
+          </div>
 
-
+          {loading.games ? (
+            <p>Loading games...</p>
+          ) : upcomingGames.length === 0 ? (
+            <p className="text-gray-500">No upcoming games found.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingGames.slice(0,6).map((g) => (
+                <div key={g._id || g.id} className="bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition">
+                  <h3 className="text-xl font-bold mb-2">{g.title || g.name}</h3>
+                  <div className="space-y-1 text-gray-600 mb-3">
+                    <p className="flex items-center gap-2">
+                      <FaClock className="text-blue-600" />
+                      {g.date ? new Date(g.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Date TBA'}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-red-600" />
+                      {g.venue?.name || g.location?.city || 'Venue TBA'}
+                    </p>
+                    {g.cost != null && (
+                      <p className="flex items-center gap-2">
+                        <FaRupeeSign className="text-green-600" /> ₹{g.cost}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <Link to={`/games/${g._id || g.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Details</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="py-16">
@@ -111,6 +172,62 @@ const Home = ({ user }) => {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Featured Jobs */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold">Featured Jobs</h2>
+            <Link to="/jobs" className="text-blue-600 hover:underline">Browse jobs</Link>
+          </div>
+
+          {loading.jobs ? (
+            <p>Loading jobs...</p>
+          ) : featuredJobs.length === 0 ? (
+            <p className="text-gray-500">No jobs available right now.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredJobs.slice(0,6).map((j) => (
+                <div key={j._id || j.id} className="bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition">
+                  <h3 className="text-xl font-bold mb-1">{j.title || j.role}</h3>
+                  <p className="text-gray-600 mb-2">{j.company || j.organization || 'Company'}</p>
+                  <div className="space-y-1 text-gray-600 mb-3">
+                    <p className="flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-red-600" />
+                      {j.location?.city || j.city || 'Remote'}
+                    </p>
+                    {j.salary && (
+                      <p className="flex items-center gap-2">
+                        <FaRupeeSign className="text-green-600" />
+                        {typeof j.salary === 'object'
+                          ? (() => {
+                              const min = j.salary.min ?? j.salary?.range?.min;
+                              const max = j.salary.max ?? j.salary?.range?.max;
+                              const currency = j.salary.currency || '₹';
+                              if (min != null && max != null) {
+                                return `${currency}${min} - ${currency}${max}`;
+                              }
+                              if (min != null) {
+                                return `${currency}${min}`;
+                              }
+                              if (max != null) {
+                                return `${currency}${max}`;
+                              }
+                              return `${currency}${j.salary.amount ?? ''}`;
+                            })()
+                          : `₹${j.salary}`}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <Link to={`/jobs/${j._id || j.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Details</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

@@ -37,6 +37,7 @@ app.use('/api/games', require('./routes/gameRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 
 // Health endpoint (includes DB connection state)
 app.get('/api/health', (req, res) => {

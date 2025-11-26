@@ -90,4 +90,14 @@ export const reviewService = {
   deleteReview: (reviewId) => apiClient.delete(`/reviews/${reviewId}`)
 };
 
+/* ---------- Booking Service ---------- */
+export const bookingService = {
+  createBooking: (bookingData) => apiClient.post('/bookings', bookingData),
+  getUserBookings: () => apiClient.get('/bookings/user'),
+  getVenueBookings: (venueId) => apiClient.get(`/bookings/venue/${venueId}`),
+  getBookingById: (bookingId) => apiClient.get(`/bookings/${bookingId}`),
+  updateBookingStatus: (bookingId, status) => apiClient.put(`/bookings/${bookingId}/status`, { status }),
+  cancelBooking: (bookingId) => apiClient.delete(`/bookings/${bookingId}`)
+};
+
 export default apiClient;

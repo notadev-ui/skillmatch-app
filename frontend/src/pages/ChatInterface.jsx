@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { FaPhone, FaVideo, FaSearch, FaTrash, FaUserCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../store/store';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { chatService } from '../services/chatService';
 
 const ChatInterface = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [conversations, setConversations] = useState([]); // List of users with recent chats
   const [activeUser, setActiveUser] = useState(null); // Current chat user
@@ -54,7 +55,20 @@ const ChatInterface = () => {
           }));
 
         // Merge: Recent conversations first, then other users
-        setConversations([...conversations, ...otherUsers]);
+        const allConversations = [...conversations, ...otherUsers];
+        setConversations(allConversations);
+
+        // Auto-select user if passed from navigation state
+        if (location.state?.selectedUser) {
+          const selectedUser = location.state.selectedUser;
+          // Find or add the user to conversations
+          const existingConv = allConversations.find(c => c.user._id === selectedUser._id);
+          if (existingConv) {
+            handleSelectUser(existingConv.user);
+          } else {
+            handleSelectUser(selectedUser);
+          }
+        }
 
       } catch (err) {
         console.error(err);
@@ -65,7 +79,7 @@ const ChatInterface = () => {
     };
 
     if (user) loadData();
-  }, [user]);
+  }, [user, location.state]);
 
   // load messages with selected user
   const handleSelectUser = async (u) => {

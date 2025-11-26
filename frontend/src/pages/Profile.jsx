@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { userService } from '../services/api';
+import { userService, bookingService } from '../services/api';
 import { useAuthStore } from '../store/store';
-
+import { FaCalendar, FaMapPin, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaUser, FaCog } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const Profile = () => {
   const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [profileData, setProfileData] = useState({
     profilePhoto: '',
@@ -27,6 +28,9 @@ const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('info'); // 'info' or 'bookings'
+  const [bookings, setBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -49,7 +53,43 @@ const Profile = () => {
         availableHours: user.availableHours?.type || 'Flexible'
       });
     }
-  }, [user]);
+    
+    // Check if we should open bookings tab from URL
+    if (searchParams.get('tab') === 'bookings') {
+      setActiveTab('bookings');
+    }
+  }, [user, searchParams]);
+
+  useEffect(() => {
+    if (activeTab === 'bookings' && user) {
+      fetchBookings();
+    }
+  }, [activeTab, user]);
+
+  const fetchBookings = async () => {
+    setLoadingBookings(true);
+    try {
+      const response = await bookingService.getUserBookings();
+      setBookings(response.data.bookings || []);
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error);
+      toast.error('Failed to load bookings');
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+
+    try {
+      await bookingService.cancelBooking(bookingId);
+      toast.success('Booking cancelled successfully');
+      fetchBookings(); // Refresh the list
+    } catch (error) {
+      toast.error('Failed to cancel booking');
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -109,7 +149,6 @@ const Profile = () => {
       updateUser(response.data.user);
       setIsEditing(false);
       toast.success('Profile updated successfully!');
-      navigate('/players'); // Redirect to players section after update
     } catch (error) {
       console.error(error);
       toast.error('Failed to update profile');
@@ -122,53 +161,130 @@ const Profile = () => {
     return <div className="text-center py-12">Please log in to view your profile.</div>;
   }
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Confirmed':
+        return <FaCheckCircle className="text-green-600" />;
+      case 'Cancelled':
+        return <FaTimesCircle className="text-red-600" />;
+      case 'Completed':
+        return <FaCheckCircle className="text-blue-600" />;
+      default:
+        return <FaHourglassHalf className="text-yellow-600" />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Confirmed':
+        return 'bg-green-100 text-green-800';
+      case 'Cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'Completed':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">My Profile</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Profile Header Card */}
+        <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            {/* Profile Photo */}
+            <div className="relative">
+              {profileData.profilePhoto ? (
+                <img
+                  src={profileData.profilePhoto}
+                  alt="Profile"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-blue-600 shadow-lg"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-blue-600 shadow-lg">
+                  <FaUser className="text-white text-5xl" />
+                </div>
+              )}
+            </div>
+
+            {/* User Info */}
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                {profileData.firstName} {profileData.lastName}
+              </h1>
+              <p className="text-lg text-gray-600 mb-2">{profileData.email}</p>
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-3">
+                <span className="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-semibold text-sm">
+                  {profileData.userType}
+                </span>
+                {profileData.city && (
+                  <span className="bg-gray-100 text-gray-800 px-4 py-1 rounded-full text-sm flex items-center gap-1">
+                    <FaMapPin /> {profileData.city}, {profileData.state}
+                  </span>
+                )}
+              </div>
+              {profileData.bio && (
+                <p className="text-gray-700 italic max-w-2xl">{profileData.bio}</p>
+              )}
+            </div>
+
+            {/* Edit Button */}
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-md transition transform hover:scale-105"
             >
-              {isEditing ? 'Cancel' : 'Edit Profile'}
+              <FaCog /> {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab('info')}
+              className={`flex-1 px-6 py-4 font-semibold transition ${
+                activeTab === 'info'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Profile Information
+            </button>
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`flex-1 px-6 py-4 font-semibold transition ${
+                activeTab === 'bookings'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              My Bookings
             </button>
           </div>
 
-          {profileData.profilePhoto && (
-            <div className="mb-6 flex justify-center">
-              <img
-                src={profileData.profilePhoto}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-blue-600"
-              />
-            </div>
-          )}
+          {/* Tab Content */}
+          <div className="p-8">
+            {activeTab === 'info' ? (
+              /* Profile Form */
+              <div>
+                {isEditing && (
+                  <div className="mb-6">
+                    <label className="block mb-2 font-medium">Profile Photo URL</label>
+                    <input
+                      type="text"
+                      name="profilePhoto"
+                      value={profileData.profilePhoto}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({ ...prev, profilePhoto: e.target.value }))
+                      }
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
 
-          {isEditing && (
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Profile Photo URL</label>
-              <input
-                type="text"
-                name="profilePhoto"
-                value={profileData.profilePhoto}
-                onChange={(e) =>
-                  setProfileData((prev) => ({ ...prev, profilePhoto: e.target.value }))
-                }
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {profileData.profilePhoto && (
-                <img
-                  src={profileData.profilePhoto}
-                  alt="Profile Preview"
-                  className="mt-4 w-32 h-32 rounded-full object-cover border-4 border-blue-600"
-                />
-              )}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic info + location */}
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -391,6 +507,116 @@ const Profile = () => {
               </div>
             )}
           </form>
+        </div>
+      ) : (
+        /* Bookings Tab */
+        <div>
+          <h2 className="text-2xl font-bold mb-6">My Venue Bookings</h2>
+          
+          {loadingBookings ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-600">Loading bookings...</p>
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <FaCalendar className="mx-auto text-6xl text-gray-300 mb-4" />
+              <p className="text-gray-600 text-lg">No bookings yet</p>
+              <button
+                onClick={() => navigate('/venues')}
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Browse Venues
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {bookings.map((booking) => (
+                <div
+                  key={booking._id}
+                  className="bg-white border rounded-lg shadow-md hover:shadow-lg transition p-6"
+                >
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    {/* Booking Info */}
+                    <div className="flex-1">
+                      <div className="flex items-start gap-4">
+                        {booking.venue?.photos && booking.venue.photos[0] && (
+                          <img
+                            src={booking.venue.photos[0]}
+                            alt={booking.venue.name}
+                            className="w-24 h-24 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-gray-800 mb-2">
+                            {booking.venue?.name || 'Venue'}
+                          </h3>
+                          
+                          <div className="space-y-1 text-gray-600">
+                            <p className="flex items-center gap-2">
+                              <FaCalendar className="text-blue-600" />
+                              {new Date(booking.bookingDate).toLocaleDateString('en-IN', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                            <p className="flex items-center gap-2">
+                              <FaClock className="text-green-600" />
+                              {booking.startTime} - {booking.endTime} ({booking.duration} hour{booking.duration > 1 ? 's' : ''})
+                            </p>
+                            <p className="flex items-center gap-2">
+                              <FaMapPin className="text-red-600" />
+                              {booking.venue?.location?.address || booking.venue?.location?.city || 'Location'}
+                            </p>
+                          </div>
+
+                          {booking.notes && (
+                            <p className="mt-2 text-sm text-gray-500 italic">
+                              Note: {booking.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status & Actions */}
+                    <div className="flex flex-col items-end gap-3">
+                      <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${getStatusColor(booking.status)}`}>
+                        {getStatusIcon(booking.status)}
+                        {booking.status}
+                      </div>
+                      
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Total Cost</p>
+                        <p className="text-2xl font-bold text-green-600">₹{booking.totalCost}</p>
+                      </div>
+
+                      {booking.status === 'Pending' && (
+                        <button
+                          onClick={() => handleCancelBooking(booking._id)}
+                          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
+                        >
+                          Cancel Booking
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => navigate(`/venues/${booking.venue._id}`)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                      >
+                        View Venue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+          </div>
         </div>
       </div>
     </div>
