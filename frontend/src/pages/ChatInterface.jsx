@@ -27,31 +27,44 @@ const ChatInterface = () => {
     }
   }, [user, navigate]);
 
-  // load conversations (users sorted by recent chat)
+  // load conversations (users sorted by recent chat) + all other users
   useEffect(() => {
-    const loadConversations = async () => {
+    const loadData = async () => {
       try {
         setLoadingConversations(true);
-        // Try to fetch sorted conversations first
-        try {
-          const res = await chatService.getConversations();
-          setConversations(res.data.conversations || []);
-        } catch (e) {
-          // Fallback to all users if conversations endpoint fails or not ready
-          const res = await chatService.getUsers();
-          const users = res.data.users || [];
-          // Map users to conversation format
-          setConversations(users.map(u => ({ user: u, lastMessage: null })));
-        }
+
+        // Fetch both concurrently
+        const [conversationsRes, usersRes] = await Promise.all([
+          chatService.getConversations().catch(e => ({ data: { conversations: [] } })),
+          chatService.getUsers().catch(e => ({ data: { users: [] } }))
+        ]);
+
+        const conversations = conversationsRes.data.conversations || [];
+        const allUsers = usersRes.data.users || [];
+
+        // Create a Set of user IDs already in conversations
+        const existingUserIds = new Set(conversations.map(c => c.user._id));
+
+        // Filter users not in conversations and map to conversation format
+        const otherUsers = allUsers
+          .filter(u => !existingUserIds.has(u._id))
+          .map(u => ({
+            user: u,
+            lastMessage: null
+          }));
+
+        // Merge: Recent conversations first, then other users
+        setConversations([...conversations, ...otherUsers]);
+
       } catch (err) {
         console.error(err);
-        toast.error('Failed to load conversations');
+        toast.error('Failed to load chat list');
       } finally {
         setLoadingConversations(false);
       }
     };
 
-    if (user) loadConversations();
+    if (user) loadData();
   }, [user]);
 
   // load messages with selected user
@@ -246,8 +259,8 @@ const ChatInterface = () => {
                       >
                         <div
                           className={`max-w-md px-4 py-2 rounded-lg relative ${isMine
-                              ? 'bg-blue-600 text-white rounded-br-none'
-                              : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                            ? 'bg-blue-600 text-white rounded-br-none'
+                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
                             }`}
                         >
                           {!isMine && <p className="text-xs font-bold mb-1 text-gray-500">{senderName}</p>}
