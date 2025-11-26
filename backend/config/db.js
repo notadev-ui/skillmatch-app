@@ -1,4 +1,8 @@
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+
+// Load environment variables here
+dotenv.config();
 
 const connectDB = async () => {
   // Use env uri if provided, otherwise fall back to localhost for development
