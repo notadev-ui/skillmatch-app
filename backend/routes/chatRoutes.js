@@ -72,6 +72,72 @@ router.post('/messages', authenticate, async (req, res) => {
   }
 });
 
+// Delete message
+router.delete('/messages/:messageId', authenticate, async (req, res) => {
+  try {
+    const current = req.userId;
+    const { messageId } = req.params;
+
+    const msg = await Message.findById(messageId);
+    if (!msg) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    if (msg.sender.toString() !== current) {
+      return res.status(403).json({ message: 'Not authorized to delete this message' });
+    }
+
+    await msg.deleteOne();
+    return res.json({ message: 'Message deleted successfully', messageId });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    res.status(500).json({ message: 'Server error while deleting message' });
+  }
+});
+
+// Get conversations (users with recent chats)
+router.get('/conversations', authenticate, async (req, res) => {
+  try {
+    const current = req.userId;
+
+    // Find all messages involving current user
+    const messages = await Message.find({
+      $or: [{ sender: current }, { receiver: current }]
+    })
+      .sort({ createdAt: -1 })
+      .populate('sender', 'firstName lastName name email profilePhoto')
+      .populate('receiver', 'firstName lastName name email profilePhoto');
+
+    const conversationsMap = new Map();
+
+    messages.forEach(msg => {
+      const otherUser = msg.sender._id.toString() === current
+        ? msg.receiver
+        : msg.sender;
+
+      const otherUserId = otherUser._id.toString();
+
+      if (!conversationsMap.has(otherUserId)) {
+        conversationsMap.set(otherUserId, {
+          user: otherUser,
+          lastMessage: {
+            text: msg.text,
+            createdAt: msg.createdAt,
+            isMine: msg.sender._id.toString() === current
+          }
+        });
+      }
+    });
+
+    const conversations = Array.from(conversationsMap.values());
+
+    return res.json({ conversations });
+  } catch (error) {
+    console.error('Error loading conversations:', error);
+    res.status(500).json({ message: 'Server error while loading conversations' });
+  }
+});
+
 module.exports = router;
 
 

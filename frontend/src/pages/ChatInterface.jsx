@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { FaPhone, FaVideo, FaSearch } from 'react-icons/fa';
+import { FaPhone, FaVideo, FaSearch, FaTrash, FaUserCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../store/store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { chatService } from '../services/chatService';
 
 const ChatInterface = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState([]);          // saare dusre users
-  const [activeUser, setActiveUser] = useState(null); // jis se chat kar rahe ho
+  const [conversations, setConversations] = useState([]); // List of users with recent chats
+  const [activeUser, setActiveUser] = useState(null); // Current chat user
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [search, setSearch] = useState('');
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
   const currentUserId = user?._id || user?.id;
@@ -27,22 +27,31 @@ const ChatInterface = () => {
     }
   }, [user, navigate]);
 
-  // load all users (except me)
+  // load conversations (users sorted by recent chat)
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadConversations = async () => {
       try {
-        setLoadingUsers(true);
-        const res = await chatService.getUsers();
-        setUsers(res.data.users || []);
+        setLoadingConversations(true);
+        // Try to fetch sorted conversations first
+        try {
+          const res = await chatService.getConversations();
+          setConversations(res.data.conversations || []);
+        } catch (e) {
+          // Fallback to all users if conversations endpoint fails or not ready
+          const res = await chatService.getUsers();
+          const users = res.data.users || [];
+          // Map users to conversation format
+          setConversations(users.map(u => ({ user: u, lastMessage: null })));
+        }
       } catch (err) {
         console.error(err);
-        toast.error('Failed to load users');
+        toast.error('Failed to load conversations');
       } finally {
-        setLoadingUsers(false);
+        setLoadingConversations(false);
       }
     };
 
-    if (user) loadUsers();
+    if (user) loadConversations();
   }, [user]);
 
   // load messages with selected user
@@ -70,13 +79,41 @@ const ChatInterface = () => {
       const msg = res.data.message;
       setMessages((prev) => [...prev, msg]);
       setNewMessage('');
+
+      // Update conversation list to show this user at top with new message
+      setConversations(prev => {
+        const other = prev.filter(c => c.user._id !== activeUser._id);
+        return [{
+          user: activeUser,
+          lastMessage: {
+            text: msg.text,
+            createdAt: msg.createdAt,
+            isMine: true
+          }
+        }, ...other];
+      });
+
     } catch (err) {
       console.error(err);
       toast.error('Failed to send message');
     }
   };
 
-  const filteredUsers = users.filter((u) => {
+  const handleDeleteMessage = async (msgId) => {
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
+
+    try {
+      await chatService.deleteMessage(msgId);
+      setMessages(prev => prev.filter(m => m._id !== msgId));
+      toast.success("Message deleted");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete message");
+    }
+  };
+
+  const filteredConversations = conversations.filter((c) => {
+    const u = c.user;
     const name =
       u.firstName && u.lastName
         ? `${u.firstName} ${u.lastName}`
@@ -89,7 +126,7 @@ const ChatInterface = () => {
       <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-4xl font-bold mb-8">Messages</h1>
 
-        <div className="grid md:grid-cols-4 gap-6 h-96">
+        <div className="grid md:grid-cols-4 gap-6 h-[600px]">
           {/* LEFT: Users list */}
           <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
             <div className="p-4 border-b">
@@ -107,14 +144,15 @@ const ChatInterface = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto">
-              {loadingUsers ? (
-                <div className="p-4 text-center text-gray-500">Loading users...</div>
-              ) : filteredUsers.length === 0 ? (
+              {loadingConversations ? (
+                <div className="p-4 text-center text-gray-500">Loading conversations...</div>
+              ) : filteredConversations.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
-                  No users available to chat
+                  No conversations found
                 </div>
               ) : (
-                filteredUsers.map((u) => {
+                filteredConversations.map((c) => {
+                  const u = c.user;
                   const name =
                     u.firstName && u.lastName
                       ? `${u.firstName} ${u.lastName}`
@@ -124,14 +162,25 @@ const ChatInterface = () => {
                     <div
                       key={u._id}
                       onClick={() => handleSelectUser(u)}
-                      className={`p-4 border-b cursor-pointer hover:bg-gray-100 transition ${
-                        activeUser?._id === u._id ? 'bg-blue-50' : ''
-                      }`}
+                      className={`p-4 border-b cursor-pointer hover:bg-gray-100 transition flex items-center gap-3 ${activeUser?._id === u._id ? 'bg-blue-50' : ''
+                        }`}
                     >
-                      <p className="font-semibold">{name}</p>
-                      {u.email && (
-                        <p className="text-sm text-gray-500">{u.email}</p>
+                      {u.profilePhoto ? (
+                        <img src={u.profilePhoto} alt={name} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <FaUserCircle className="w-10 h-10 text-gray-400" />
                       )}
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{name}</p>
+                        {c.lastMessage ? (
+                          <p className="text-sm text-gray-500 truncate">
+                            {c.lastMessage.isMine ? 'You: ' : ''}{c.lastMessage.text}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">Start a conversation</p>
+                        )}
+                      </div>
                     </div>
                   );
                 })
@@ -143,24 +192,37 @@ const ChatInterface = () => {
           {activeUser ? (
             <div className="col-span-3 bg-white rounded-lg shadow-lg flex flex-col">
               {/* Header */}
-              <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="text-lg font-bold">
-                  {activeUser.firstName && activeUser.lastName
-                    ? `${activeUser.firstName} ${activeUser.lastName}`
-                    : activeUser.name || activeUser.email}
-                </h3>
+              <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+                <div className="flex items-center gap-3">
+                  {activeUser.profilePhoto ? (
+                    <img src={activeUser.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <FaUserCircle className="w-10 h-10 text-gray-400" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      {activeUser.firstName && activeUser.lastName
+                        ? `${activeUser.firstName} ${activeUser.lastName}`
+                        : activeUser.name || activeUser.email}
+                    </h3>
+                    <Link to={`/profile/${activeUser._id}`} className="text-xs text-blue-600 hover:underline">
+                      View Profile
+                    </Link>
+                  </div>
+                </div>
+
                 <div className="flex gap-4">
-                  <button className="text-blue-600 hover:text-blue-700">
+                  <button className="text-blue-600 hover:text-blue-700 p-2 rounded-full hover:bg-blue-100 transition">
                     <FaPhone />
                   </button>
-                  <button className="text-blue-600 hover:text-blue-700">
+                  <button className="text-blue-600 hover:text-blue-700 p-2 rounded-full hover:bg-blue-100 transition">
                     <FaVideo />
                   </button>
                 </div>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
                 {loadingMessages ? (
                   <p className="text-center text-gray-500">Loading messages...</p>
                 ) : messages.length === 0 ? (
@@ -180,22 +242,32 @@ const ChatInterface = () => {
                     return (
                       <div
                         key={msg._id}
-                        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}
                       >
                         <div
-                          className={`max-w-xs px-4 py-2 rounded-lg ${
-                            isMine
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-800'
-                          }`}
+                          className={`max-w-md px-4 py-2 rounded-lg relative ${isMine
+                              ? 'bg-blue-600 text-white rounded-br-none'
+                              : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                            }`}
                         >
-                          <p className="text-sm font-semibold">{senderName}</p>
+                          {!isMine && <p className="text-xs font-bold mb-1 text-gray-500">{senderName}</p>}
                           <p>{msg.text}</p>
-                          <p className="text-xs mt-1 opacity-75">
-                            {msg.createdAt
-                              ? new Date(msg.createdAt).toLocaleTimeString()
-                              : ''}
-                          </p>
+                          <div className="flex items-center justify-end gap-2 mt-1">
+                            <p className={`text-[10px] ${isMine ? 'text-blue-100' : 'text-gray-400'}`}>
+                              {msg.createdAt
+                                ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                : ''}
+                            </p>
+                            {isMine && (
+                              <button
+                                onClick={() => handleDeleteMessage(msg._id)}
+                                className="text-red-300 hover:text-red-100 opacity-0 group-hover:opacity-100 transition"
+                                title="Delete message"
+                              >
+                                <FaTrash size={10} />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -204,18 +276,18 @@ const ChatInterface = () => {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t">
+              <form onSubmit={handleSendMessage} className="p-4 border-t bg-gray-50">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   />
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                    className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 font-semibold shadow-md transition transform hover:scale-105"
                   >
                     Send
                   </button>
@@ -223,10 +295,10 @@ const ChatInterface = () => {
               </form>
             </div>
           ) : (
-            <div className="col-span-3 bg-white rounded-lg shadow-lg flex items-center justify-center">
-              <p className="text-gray-500 text-lg">
-                Select a user to start messaging
-              </p>
+            <div className="col-span-3 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center text-gray-400">
+              <FaUserCircle className="w-24 h-24 mb-4 opacity-20" />
+              <p className="text-xl font-medium">Select a conversation</p>
+              <p className="text-sm">Choose a user from the list to start chatting</p>
             </div>
           )}
         </div>

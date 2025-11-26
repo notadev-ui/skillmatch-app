@@ -17,6 +17,8 @@ api.interceptors.request.use((config) => {
 
 export const chatService = {
   getUsers: () => api.get("/users"),
+  getConversations: () => api.get("/conversations"),
   getMessagesWithUser: (userId) => api.get(`/messages/${userId}`),
   sendMessage: (receiverId, text) => api.post("/messages", { receiverId, text }),
+  deleteMessage: (messageId) => api.delete(`/messages/${messageId}`),
 };
