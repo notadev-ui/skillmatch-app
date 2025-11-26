@@ -12,7 +12,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:5000',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST',"PUT", "DELETE", "PATCH", "OPTIONS"]
   }
 });
 
