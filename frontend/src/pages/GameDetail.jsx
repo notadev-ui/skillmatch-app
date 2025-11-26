@@ -13,7 +13,8 @@ const GameDetail = ({ id, onClose }) => {
       setLoading(true);
       try {
         const response = await gameService.getGameById(id);
-        setGame(response.data);
+        // Backend returns { message, game }
+        setGame(response.data.game);
       } catch (error) {
         toast.error('Failed to load game details.');
       } finally {
@@ -32,14 +33,33 @@ const GameDetail = ({ id, onClose }) => {
       ) : !game ? (
         <div>Game not found.</div>
       ) : (
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h1 className="text-3xl font-bold mb-4">{game.title}</h1>
-            <p className="mb-2"><strong>Description:</strong> {game.description}</p>
-            <p className="mb-2"><strong>Date:</strong> {new Date(game.date).toLocaleString()}</p>
-            <p className="mb-2"><strong>Location:</strong> {game.location}</p>
-            <p className="mb-2"><strong>Status:</strong> {game.status}</p>
-            {/* Add more game details here as needed */}
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 space-y-4">
+            <h1 className="text-3xl font-bold mb-2">{game.title}</h1>
+            <p className="text-gray-700">{game.description}</p>
+            <div className="grid md:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <p><strong>Date & Time:</strong> {new Date(game.date).toLocaleDateString()} {game.startTime} - {game.endTime}</p>
+                <p><strong>Sport:</strong> {game.sportType}</p>
+                <p><strong>Skill Level:</strong> {game.skillLevel}</p>
+                <p><strong>Event Type:</strong> {game.eventType}</p>
+                <p><strong>Status:</strong> {game.status}</p>
+              </div>
+              <div className="space-y-2">
+                <p><strong>Cost:</strong> ₹{game.cost}</p>
+                <p><strong>Players:</strong> {game.registeredPlayers?.length || 0}/{game.maxPlayers}</p>
+                <p><strong>Venue:</strong> {game.venue?.name || 'TBD'}</p>
+                {game.venue?.location && (
+                  <p><strong>Venue Location:</strong> {game.venue.location.address || game.venue.location.city}</p>
+                )}
+                {game.organizer && (
+                  <p><strong>Organizer:</strong> {game.organizer.firstName} {game.organizer.lastName}</p>
+                )}
+              </div>
+            </div>
+            {game.ratings && (
+              <p><strong>Ratings:</strong> {game.ratings.average} ({game.ratings.count} reviews)</p>
+            )}
           </div>
         </div>
       )}

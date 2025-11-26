@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { userService } from '../services/api';
 import { toast } from 'react-toastify';
 import Modal from '../components/Modal';
 
-const ProfileDetail = ({ id, onClose }) => {
+const ProfileDetail = ({ id: propId, onClose }) => {
+  const { id: routeId } = useParams();
+  const id = propId || routeId;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
