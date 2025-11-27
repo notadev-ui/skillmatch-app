@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { userService, bookingService, jobService } from '../services/api';
+import { userService, bookingService, jobService, gameService } from '../services/api';
 import { useAuthStore } from '../store/store';
-import { FaCalendar, FaMapPin, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaUser, FaCog, FaBriefcase, FaRupeeSign } from 'react-icons/fa';
+import { FaCalendar, FaMapPin, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaUser, FaCog, FaBriefcase, FaRupeeSign, FaTicketAlt, FaTrophy, FaDownload } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { generateGameTicketPDF } from '../utils/pdfGenerator';
 
 const Profile = () => {
   const { user, updateUser } = useAuthStore();
@@ -28,11 +29,13 @@ const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'bookings', or 'applications'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'bookings', 'applications', or 'tickets'
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [applications, setApplications] = useState([]);
   const [loadingApplications, setLoadingApplications] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -62,6 +65,8 @@ const Profile = () => {
       setActiveTab('bookings');
     } else if (tabParam === 'applications') {
       setActiveTab('applications');
+    } else if (tabParam === 'tickets') {
+      setActiveTab('tickets');
     }
   }, [user, searchParams]);
 
@@ -70,6 +75,8 @@ const Profile = () => {
       fetchBookings();
     } else if (activeTab === 'applications' && user) {
       fetchApplications();
+    } else if (activeTab === 'tickets' && user) {
+      fetchTickets();
     }
   }, [activeTab, user]);
 
@@ -96,6 +103,19 @@ const Profile = () => {
       toast.error('Failed to load applications');
     } finally {
       setLoadingApplications(false);
+    }
+  };
+
+  const fetchTickets = async () => {
+    setLoadingTickets(true);
+    try {
+      const response = await gameService.getUserTickets();
+      setTickets(response.data.tickets || []);
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+      toast.error('Failed to load tickets');
+    } finally {
+      setLoadingTickets(false);
     }
   };
 
@@ -291,6 +311,16 @@ const Profile = () => {
               }`}
             >
               My Applications
+            </button>
+            <button
+              onClick={() => setActiveTab('tickets')}
+              className={`flex-1 px-6 py-4 font-semibold transition ${
+                activeTab === 'tickets'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              My Tickets
             </button>
           </div>
 
@@ -537,8 +567,8 @@ const Profile = () => {
               </div>
             )}
           </form>
-        </div>
-      ) : activeTab === 'bookings' ? (
+          </div>
+        ) : activeTab === 'bookings' ? (
         /* Bookings Tab */
         <div>
           <h2 className="text-2xl font-bold mb-6">My Venue Bookings</h2>
@@ -645,7 +675,7 @@ const Profile = () => {
             </div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'applications' ? (
         /* Applications Tab */
         <div>
           <h2 className="text-2xl font-bold mb-6">My Job Applications</h2>
@@ -743,6 +773,130 @@ const Profile = () => {
                           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
                         >
                           View Job
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Tickets Tab */
+        <div>
+          <h2 className="text-2xl font-bold mb-6">My Game Tickets</h2>
+          
+          {loadingTickets ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-600">Loading tickets...</p>
+            </div>
+          ) : tickets.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <FaTicketAlt className="mx-auto text-6xl text-gray-300 mb-4" />
+              <p className="text-gray-600 text-lg">No game tickets yet</p>
+              <button
+                onClick={() => navigate('/games')}
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Browse Games
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {tickets.map((ticket) => {
+                const game = ticket.game;
+                if (!game) return null;
+
+                return (
+                  <div
+                    key={ticket._id}
+                    className="bg-white border rounded-lg shadow-md hover:shadow-lg transition p-6"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                      {/* Ticket Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaTicketAlt className="text-blue-600" />
+                          <span className="font-mono text-sm font-semibold text-gray-700">
+                            {ticket.ticketId}
+                          </span>
+                        </div>
+                        
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          {game.title}
+                        </h3>
+                        
+                        <div className="space-y-1 text-gray-600">
+                          <p className="flex items-center gap-2">
+                            <FaTrophy className="text-yellow-600" />
+                            {game.sportType}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <FaCalendar className="text-purple-600" />
+                            {new Date(game.date).toLocaleDateString('en-IN', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <FaClock className="text-orange-600" />
+                            {game.startTime} - {game.endTime}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <FaMapPin className="text-red-600" />
+                            {game.venue?.name || 'Venue TBD'}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <FaRupeeSign className="text-green-600" />
+                            ₹{game.cost}
+                          </p>
+                        </div>
+
+                        <div className="mt-3 p-3 bg-gray-50 rounded">
+                          <p className="text-sm font-semibold text-gray-700">Player: {ticket.playerInfo.name}</p>
+                          <p className="text-xs text-gray-600">{ticket.playerInfo.email}</p>
+                          <p className="text-xs text-gray-600">{ticket.playerInfo.phone}</p>
+                        </div>
+                      </div>
+
+                      {/* Status & Actions */}
+                      <div className="flex flex-col items-end gap-3">
+                        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
+                          ticket.status === 'Active' ? 'bg-green-100 text-green-800' :
+                          ticket.status === 'Used' ? 'bg-blue-100 text-blue-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {ticket.status === 'Active' && <FaCheckCircle />}
+                          {ticket.status === 'Cancelled' && <FaTimesCircle />}
+                          {ticket.status}
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">Booked On</p>
+                          <p className="text-sm font-semibold text-gray-800">
+                            {new Date(ticket.bookingDate).toLocaleDateString('en-IN', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => generateGameTicketPDF(ticket, game)}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
+                        >
+                          <FaDownload /> Download PDF
+                        </button>
+
+                        <button
+                          onClick={() => navigate(`/games/${game._id}`)}
+                          className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm"
+                        >
+                          View Game
                         </button>
                       </div>
                     </div>

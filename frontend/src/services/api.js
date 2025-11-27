@@ -52,9 +52,11 @@ export const gameService = {
   getAllGames: (params) => apiClient.get('/games', { params }),
   getGameById: (gameId) => apiClient.get(`/games/${gameId}`),
   createGame: (gameData) => apiClient.post('/games', gameData),
-  registerForGame: (gameId) => apiClient.post(`/games/${gameId}/register`),
+  registerForGame: (gameId, playerInfo) => apiClient.post(`/games/${gameId}/register`, playerInfo),
   cancelRegistration: (gameId) => apiClient.delete(`/games/${gameId}/cancel-registration`),
   getUserGames: () => apiClient.get('/games/user/games'),
+  getUserTickets: () => apiClient.get('/games/user/tickets'),
+  getTicketById: (ticketId) => apiClient.get(`/games/tickets/${ticketId}`),
   updateGameStatus: (gameId, status) => apiClient.put(`/games/${gameId}/status`, { status })
 };
 

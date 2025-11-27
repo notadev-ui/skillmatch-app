@@ -1,5 +1,6 @@
 const Game = require('../models/Game');
 const Venue = require('../models/Venue');
+const GameTicket = require('../models/GameTicket');
 
 // Create game/event
 exports.createGame = async (req, res) => {
@@ -100,10 +101,41 @@ exports.getGameById = async (req, res) => {
 // Register player for game
 exports.registerPlayerForGame = async (req, res) => {
   try {
+    const { name, email, phone } = req.body;
+
+    console.log('Registration request:', { gameId: req.params.gameId, userId: req.userId, name, email, phone });
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({ message: 'Name, email, and phone are required' });
+    }
+
     const game = await Game.findById(req.params.gameId);
 
     if (!game) {
       return res.status(404).json({ message: 'Game not found' });
+    }
+
+    // Check if user already has a ticket for this game
+    const existingTicket = await GameTicket.findOne({
+      game: req.params.gameId,
+      user: req.userId
+    }).populate({
+      path: 'game',
+      select: 'title sportType date startTime endTime cost skillLevel status',
+      populate: {
+        path: 'venue',
+        select: 'name location'
+      }
+    });
+
+    if (existingTicket) {
+      console.log('User already has ticket:', existingTicket.ticketId);
+      // Return the existing ticket so frontend can show it
+      return res.status(200).json({ 
+        message: 'You already have a ticket for this game',
+        ticket: existingTicket,
+        alreadyRegistered: true
+      });
     }
 
     // Check if already registered
@@ -120,17 +152,46 @@ exports.registerPlayerForGame = async (req, res) => {
       return res.status(400).json({ message: 'Game is full' });
     }
 
+    // Create ticket
+    const ticket = new GameTicket({
+      game: req.params.gameId,
+      user: req.userId,
+      playerInfo: {
+        name,
+        email,
+        phone
+      }
+    });
+
+    await ticket.save();
+    console.log('Ticket created:', ticket._id);
+
+    // Register player
     game.registeredPlayers.push({
       userId: req.userId,
       joinedAt: new Date()
     });
 
     await game.save();
-    await game.populate('registeredPlayers.userId', 'firstName lastName');
+    
+    // Populate ticket with game details for PDF generation
+    const populatedTicket = await GameTicket.findById(ticket._id)
+      .populate({
+        path: 'game',
+        select: 'title sportType date startTime endTime cost skillLevel status',
+        populate: {
+          path: 'venue',
+          select: 'name location'
+        }
+      })
+      .populate('user', 'firstName lastName email');
+
+    console.log('Ticket populated:', populatedTicket);
 
     res.status(200).json({
       message: 'Registered for game successfully',
-      game
+      game,
+      ticket: populatedTicket
     });
   } catch (error) {
     console.error(error);
@@ -194,6 +255,62 @@ exports.updateGameStatus = async (req, res) => {
     res.status(200).json({
       message: 'Game status updated',
       game
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get user's game tickets
+exports.getUserTickets = async (req, res) => {
+  try {
+    const tickets = await GameTicket.find({ user: req.userId })
+      .populate({
+        path: 'game',
+        populate: {
+          path: 'venue',
+          select: 'name location'
+        }
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      message: 'Tickets retrieved',
+      count: tickets.length,
+      tickets
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get ticket by ID
+exports.getTicketById = async (req, res) => {
+  try {
+    const ticket = await GameTicket.findById(req.params.ticketId)
+      .populate({
+        path: 'game',
+        populate: {
+          path: 'venue organizer',
+          select: 'name location firstName lastName'
+        }
+      })
+      .populate('user', 'firstName lastName');
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Check if user owns this ticket
+    if (ticket.user._id.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    res.status(200).json({
+      message: 'Ticket retrieved',
+      ticket
     });
   } catch (error) {
     console.error(error);
