@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { userService } from '../services/api';
-import { FaStar, FaMapPin } from 'react-icons/fa';
+import { FaStar, FaMapPin, FaComments, FaUserCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -109,12 +109,16 @@ const PlayerSearch = () => {
             {players.map((player) => (
               <div key={player._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <div className="flex p-6 gap-6 items-center">
-                  {player.profilePhoto && (
+                  {player.profilePhoto ? (
                     <img
                       src={player.profilePhoto}
                       alt={player.firstName}
                       className="w-28 h-28 rounded-full object-cover border-4 border-blue-600"
                     />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full bg-gray-200 border-4 border-blue-600 flex items-center justify-center">
+                      <FaUserCircle className="w-20 h-20 text-gray-400" />
+                    </div>
                   )}
 
                   <div className="flex-1">
@@ -154,12 +158,21 @@ const PlayerSearch = () => {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => goToProfilePage(player._id)}
-                      className="mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition"
-                    >
-                      View Profile
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => goToProfilePage(player._id)}
+                        className="mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition"
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => navigate('/chat', { state: { selectedUser: player } })}
+                        className="mt-6 bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+                      >
+                        <FaComments />
+                        Chat
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
