@@ -21,9 +21,178 @@ A comprehensive platform connecting athletes, coaches, venues, and sports organi
 
 ---
 
+## Quick Start
+
+This section gets you running locally on Windows PowerShell (pwsh).
+
+Prerequisites
+
+* Node.js 18+ and npm
+* MongoDB running locally on `mongodb://localhost:27017/skillmatch`
+* Two terminals (one for backend, one for frontend)
+
+Environment Variables
+
+* Backend: create `backend/.env`
+  * `MONGO_URI=mongodb://localhost:27017/skillmatch`
+  * `JWT_SECRET=your-strong-secret`
+  * Optional Cloudinary: `CLOUDINARY_URL` or `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+* Frontend: create `frontend/.env`
+  * `REACT_APP_API_URL=http://localhost:5000/api`
+
+Install Dependencies
+
+```pwsh
+cd backend
+npm install
+cd ../frontend
+npm install
+```
+
+Start Development
+
+```pwsh
+# terminal 1 (backend)
+cd backend
+npm start
+
+# terminal 2 (frontend)
+cd frontend
+npm start
+```
+
+Default Ports
+
+* Backend: `http://localhost:5000`
+* Frontend: `http://localhost:3000` (Create React App may prompt to use another port)
+
+Seed Sample Data (optional but recommended)
+
+```pwsh
+cd backend
+node addSampleVenues.js   # adds 5 venues with full location data
+node addSampleGames.js    # adds 8 games assigned to venues
+```
+
+---
+
+## Feature Highlights (Current Build)
+
+* Games & Events: venue/location populated and visible in list and detail views
+* Join Game & Ticketing:
+  * Collects player name, email, phone
+  * Generates unique `ticketId` (server-side) and stores ticket in MongoDB
+  * Prevents duplicate tickets per user/game
+  * Downloadable PDF ticket with game and user details
+  * “My Tickets” tab in profile for viewing/downloading past tickets
+* Chat Improvements:
+  * Auto-refresh messages every 3s and conversation list every 5s
+  * Unread badge and dot indicator on conversations
+  * Messages marked read server-side when viewing a conversation
+  * Fixed-height chat and conversations panes with scroll, avoiding footer overlap
+
+---
+
+## Ticket Booking Flow (Frontend + Backend)
+
+User Flow
+
+* Open a game detail page (`/games/:id`)
+* Click “Join Game” → fill name, email, phone
+* Submit → backend creates a `GameTicket` with a unique `ticketId`
+* On success: show success modal + “Download Ticket PDF” button
+* View all tickets later under Profile → My Tickets
+
+Key API
+
+* `POST /api/games/:gameId/register` → accepts `{ name, email, phone }`
+* Returns `{ ticket, alreadyRegistered }` and uses `ticketId` generated on the server
+
+PDF Generation
+
+* Frontend utility creates a professional ticket PDF using jsPDF
+* Includes game title, venue, schedule, player info, ticketId, and booking date
+
+Duplicate Prevention
+
+* Backend checks for existing ticket for the same user/game and returns the existing ticket instead of creating a new one
+
+---
+
+## Chat: Auto-Refresh + Unread Indicators
+
+Polling
+
+* Conversations refresh every 5s; messages refresh every 3s when a conversation is active
+
+Unread Indicators
+
+* Conversation list shows an unread badge count and a blue dot on avatars
+* Names/messages are highlighted when unread
+
+Mark-as-Read Endpoint
+
+* `PUT /api/chat/messages/read/:otherUserId` → marks all unread incoming messages from `otherUserId` as read for the current user
+
+Message Model
+
+* Added `isRead: Boolean` to track unread/read state
+
+UI Behavior
+
+* Fixed-height containers with `overflow-y-auto` scrolling
+* Smooth auto-scroll to latest message when new messages arrive
+
+---
+
+## Troubleshooting
+
+Common Issues
+* Backend 500 “ticketId required”: restart backend after model changes
+* Ports Busy: another service is using 3000/3001/5000. Either accept a new port when prompted or stop Node processes:
+
+  ```pwsh
+  Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
+  ```
+
+* MongoDB Not Running: ensure local MongoDB is up or update `MONGO_URI` in `backend/.env`
+* Venue/Location Not Showing: run seed scripts to ensure venues exist and games reference venues
+* Footer Overlap: chat page uses fixed height and bottom padding. If still overlapping, clear browser cache and restart frontend.
+
+Logs & Debugging
+* Backend logs in the terminal show registration and ticket creation events
+* Use browser devtools (Network tab) to verify API calls and responses
+
+---
+
+## Scripts & Utilities
+
+* `backend/addSampleVenues.js`: seeds 5 venues with complete location, facilities, hours, and ratings
+* `backend/addSampleGames.js`: seeds 8 games with venue assignments and upcoming dates
+* `frontend/src/utils/pdfGenerator.js`: jsPDF-based utility for generating ticket PDFs
+
+---
+
+## Development Notes
+
+* Authentication: JWT stored in `localStorage`, attached by Axios interceptor
+* State: Zustand store in `frontend/src/store/store.js`
+* Styling: Tailwind config in `frontend/tailwind.config.js`
+* API base URL: set via `REACT_APP_API_URL`
+
+---
+
+## Deployment (Overview)
+
+* Frontend: Vercel or Netlify; configure `REACT_APP_API_URL` to your backend URL
+* Backend: Render/Heroku/Dokku; configure `MONGO_URI`, `JWT_SECRET`, and optional Cloudinary credentials
+* MongoDB: Atlas cluster or self-host; ensure proper IP allowlists and SRV connection string
+
+---
+
 ## System Architecture
 
-```
+```text
                          USER (Web Browser)
                                  |
                                  | HTTPS Request
@@ -103,7 +272,7 @@ A comprehensive platform connecting athletes, coaches, venues, and sports organi
 
 ### User Registration Flow
 
-```
+```text
 User submits registration form
         |
         v
@@ -161,7 +330,7 @@ Redirect to Dashboard
 
 ### User Login Flow
 
-```
+```text
 User enters credentials
         |
         v
@@ -199,7 +368,7 @@ User exists?
 
 ### Protected Route Flow
 
-```
+```text
 User makes request to protected endpoint
         |
         v
@@ -240,7 +409,7 @@ jwt.verify(token, JWT_SECRET)
 
 ## Skill-Based Player Matching Flow
 
-```
+```text
 User wants to find players
         |
         v
@@ -321,7 +490,7 @@ Open chat room or send connection request
 
 ### Finding Nearby Venues
 
-```
+```text
 User opens "Find Venues"
         |
         v
@@ -424,6 +593,7 @@ Show venue details modal
 ```
 
 **Geospatial Index Structure:**
+
 ```javascript
 venueSchema.index({ location: '2dsphere' });
 userSchema.index({ location: '2dsphere' });
@@ -435,7 +605,7 @@ userSchema.index({ location: '2dsphere' });
 
 ### Establishing WebSocket Connection
 
-```
+```text
 User logs in successfully
         |
         v
