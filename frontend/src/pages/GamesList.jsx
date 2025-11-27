@@ -106,10 +106,10 @@ const GamesList = () => {
                       <FaCalendar className="text-blue-600" />
                       {new Date(game.date).toLocaleDateString()} at {game.startTime}
                     </p>
-                    <p className="flex items-center gap-2">
+                    {/* <p className="flex items-center gap-2">
                       <FaMapPin className="text-blue-600" />
                       {game.venue?.name}
-                    </p>
+                    </p> */}
                     <p className="flex items-center gap-2">
                       <FaUsers className="text-blue-600" />
                       {game.registeredPlayers.length}/{game.maxPlayers} Players
