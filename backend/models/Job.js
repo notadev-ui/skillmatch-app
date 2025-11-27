@@ -38,7 +38,7 @@ const jobSchema = new mongoose.Schema(
       max: Number,
       currency: {
         type: String,
-        default: 'USD'
+        default: '₹'
       }
     },
     startDate: Date,

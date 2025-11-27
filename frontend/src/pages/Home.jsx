@@ -138,7 +138,8 @@ const Home = ({ user }) => {
                     </p>
                     {g.cost != null && (
                       <p className="flex items-center gap-2">
-                        <FaRupeeSign className="text-green-600" /> ₹{g.cost}
+                        <FaRupeeSign className="text-green-600" />
+                        {g.cost}
                       </p>
                     )}
                   </div>
@@ -205,17 +206,16 @@ const Home = ({ user }) => {
                           ? (() => {
                               const min = j.salary.min ?? j.salary?.range?.min;
                               const max = j.salary.max ?? j.salary?.range?.max;
-                              const currency = j.salary.currency || '₹';
                               if (min != null && max != null) {
-                                return `${currency}${min} - ${currency}${max}`;
+                                return `₹${min} - ₹${max}`;
                               }
                               if (min != null) {
-                                return `${currency}${min}`;
+                                return `₹${min}`;
                               }
                               if (max != null) {
-                                return `${currency}${max}`;
+                                return `₹${max}`;
                               }
-                              return `${currency}${j.salary.amount ?? ''}`;
+                              return `₹${j.salary.amount ?? ''}`;
                             })()
                           : `₹${j.salary}`}
                       </p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { userService, bookingService } from '../services/api';
+import { userService, bookingService, jobService } from '../services/api';
 import { useAuthStore } from '../store/store';
-import { FaCalendar, FaMapPin, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaUser, FaCog } from 'react-icons/fa';
+import { FaCalendar, FaMapPin, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaUser, FaCog, FaBriefcase, FaRupeeSign } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -28,9 +28,11 @@ const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('info'); // 'info' or 'bookings'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'bookings', or 'applications'
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
+  const [applications, setApplications] = useState([]);
+  const [loadingApplications, setLoadingApplications] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -54,15 +56,20 @@ const Profile = () => {
       });
     }
     
-    // Check if we should open bookings tab from URL
-    if (searchParams.get('tab') === 'bookings') {
+    // Check if we should open specific tab from URL
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'bookings') {
       setActiveTab('bookings');
+    } else if (tabParam === 'applications') {
+      setActiveTab('applications');
     }
   }, [user, searchParams]);
 
   useEffect(() => {
     if (activeTab === 'bookings' && user) {
       fetchBookings();
+    } else if (activeTab === 'applications' && user) {
+      fetchApplications();
     }
   }, [activeTab, user]);
 
@@ -76,6 +83,19 @@ const Profile = () => {
       toast.error('Failed to load bookings');
     } finally {
       setLoadingBookings(false);
+    }
+  };
+
+  const fetchApplications = async () => {
+    setLoadingApplications(true);
+    try {
+      const response = await jobService.getAppliedJobs();
+      setApplications(response.data.jobs || []);
+    } catch (error) {
+      console.error('Failed to fetch applications:', error);
+      toast.error('Failed to load applications');
+    } finally {
+      setLoadingApplications(false);
     }
   };
 
@@ -261,6 +281,16 @@ const Profile = () => {
               }`}
             >
               My Bookings
+            </button>
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`flex-1 px-6 py-4 font-semibold transition ${
+                activeTab === 'applications'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              My Applications
             </button>
           </div>
 
@@ -508,7 +538,7 @@ const Profile = () => {
             )}
           </form>
         </div>
-      ) : (
+      ) : activeTab === 'bookings' ? (
         /* Bookings Tab */
         <div>
           <h2 className="text-2xl font-bold mb-6">My Venue Bookings</h2>
@@ -612,6 +642,113 @@ const Profile = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Applications Tab */
+        <div>
+          <h2 className="text-2xl font-bold mb-6">My Job Applications</h2>
+          
+          {loadingApplications ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-600">Loading applications...</p>
+            </div>
+          ) : applications.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <FaBriefcase className="mx-auto text-6xl text-gray-300 mb-4" />
+              <p className="text-gray-600 text-lg">No applications yet</p>
+              <button
+                onClick={() => navigate('/jobs')}
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Browse Jobs
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {applications.map((job) => {
+                const application = job.applicants?.find(app => app.applicant?._id === user._id || app.applicant === user._id);
+                const applicationStatus = application?.status || 'Pending';
+                const appliedDate = application?.appliedAt;
+
+                return (
+                  <div
+                    key={job._id}
+                    className="bg-white border rounded-lg shadow-md hover:shadow-lg transition p-6"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                      {/* Job Info */}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          {job.title}
+                        </h3>
+                        
+                        <div className="space-y-1 text-gray-600">
+                          <p className="flex items-center gap-2">
+                            <FaBriefcase className="text-blue-600" />
+                            {job.venueId?.name || 'Venue'}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <FaMapPin className="text-red-600" />
+                            {job.venueId?.location?.city || job.location?.city || 'Location'}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <FaRupeeSign className="text-green-600" />
+                            {job.salary?.min && job.salary?.max 
+                              ? `₹${job.salary.min} - ₹${job.salary.max}`
+                              : 'Salary not specified'
+                            } {job.salary?.period && `/ ${job.salary.period}`}
+                          </p>
+                          {appliedDate && (
+                            <p className="flex items-center gap-2 text-sm">
+                              <FaCalendar className="text-purple-600" />
+                              Applied on: {new Date(appliedDate).toLocaleDateString('en-IN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          )}
+                        </div>
+
+                        {job.description && (
+                          <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+                            {job.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Status & Actions */}
+                      <div className="flex flex-col items-end gap-3">
+                        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
+                          applicationStatus === 'Accepted' ? 'bg-green-100 text-green-800' :
+                          applicationStatus === 'Rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {applicationStatus === 'Accepted' && <FaCheckCircle />}
+                          {applicationStatus === 'Rejected' && <FaTimesCircle />}
+                          {applicationStatus === 'Pending' && <FaHourglassHalf />}
+                          {applicationStatus}
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">Job Type</p>
+                          <p className="text-lg font-semibold text-gray-800">{job.employmentType || 'N/A'}</p>
+                        </div>
+
+                        <button
+                          onClick={() => navigate(`/jobs/${job._id}`)}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                        >
+                          View Job
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

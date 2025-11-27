@@ -34,7 +34,7 @@ async function addSampleJobs() {
         title: 'Senior Basketball Coach',
         description: 'Looking for an experienced basketball coach to lead our youth team. Must have coaching certification and 3+ years of experience.',
         location: 'New York, NY',
-        salary: { min: 45000, max: 65000, currency: 'USD' },
+        salary: { min: 45000, max: 65000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Basketball Coaching', proficiencyLevel: 'Expert' },
           { skillName: 'Team Management', proficiencyLevel: 'Advanced' },
@@ -49,7 +49,7 @@ async function addSampleJobs() {
         title: 'Soccer Referee Assistant',
         description: 'Assist with officiating youth soccer matches. Training provided. Flexible hours.',
         location: 'Los Angeles, CA',
-        salary: { min: 20000, max: 30000, currency: 'USD' },
+        salary: { min: 20000, max: 30000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Soccer Rules', proficiencyLevel: 'Intermediate' },
           { skillName: 'Physical Fitness', proficiencyLevel: 'Intermediate' }
@@ -63,7 +63,7 @@ async function addSampleJobs() {
         title: 'Event Setup Helper',
         description: 'Help set up and break down sports equipment for various events. Part-time position.',
         location: 'Chicago, IL',
-        salary: { min: 15000, max: 25000, currency: 'USD' },
+        salary: { min: 15000, max: 25000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Equipment Handling', proficiencyLevel: 'Beginner' },
           { skillName: 'Physical Labor', proficiencyLevel: 'Intermediate' }
@@ -77,7 +77,7 @@ async function addSampleJobs() {
         title: 'Tennis Court Maintenance Staff',
         description: 'Maintain tennis courts and facilities. Full-time position with benefits.',
         location: 'Boston, MA',
-        salary: { min: 30000, max: 40000, currency: 'USD' },
+        salary: { min: 30000, max: 40000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Maintenance', proficiencyLevel: 'Advanced' },
           { skillName: 'Youth Sports', proficiencyLevel: 'Intermediate' }
@@ -91,7 +91,7 @@ async function addSampleJobs() {
         title: 'Swimming Pool Lifeguard',
         description: 'Monitor pool safety and provide assistance. Lifeguard certification required.',
         location: 'Phoenix, AZ',
-        salary: { min: 25000, max: 35000, currency: 'USD' },
+        salary: { min: 25000, max: 35000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Lifeguarding', proficiencyLevel: 'Expert' },
           { skillName: 'CPR', proficiencyLevel: 'Expert' },
@@ -106,7 +106,7 @@ async function addSampleJobs() {
         title: 'Volleyball Referee',
         description: 'Officiate volleyball matches at various levels. Certification preferred.',
         location: 'Seattle, WA',
-        salary: { min: 22000, max: 32000, currency: 'USD' },
+        salary: { min: 22000, max: 32000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Volleyball Rules', proficiencyLevel: 'Advanced' },
           { skillName: 'Referee Training', proficiencyLevel: 'Intermediate' }
@@ -120,7 +120,7 @@ async function addSampleJobs() {
         title: 'Gym Equipment Technician',
         description: 'Maintain and repair gym equipment. Technical experience required.',
         location: 'Denver, CO',
-        salary: { min: 40000, max: 55000, currency: 'USD' },
+        salary: { min: 40000, max: 55000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Equipment Repair', proficiencyLevel: 'Expert' },
           { skillName: 'Technical Skills', proficiencyLevel: 'Advanced' }
@@ -134,7 +134,7 @@ async function addSampleJobs() {
         title: 'Youth Soccer Coach',
         description: 'Coach youth soccer teams and develop young players. USSF certification preferred.',
         location: 'Los Angeles, CA',
-        salary: { min: 35000, max: 50000, currency: 'USD' },
+        salary: { min: 35000, max: 50000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Soccer Coaching', proficiencyLevel: 'Advanced' },
           { skillName: 'Youth Development', proficiencyLevel: 'Advanced' },
@@ -149,7 +149,7 @@ async function addSampleJobs() {
         title: 'Basketball Referee',
         description: 'Officiate basketball games at various levels. NBA referee certification a plus.',
         location: 'Chicago, IL',
-        salary: { min: 30000, max: 45000, currency: 'USD' },
+        salary: { min: 30000, max: 45000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Basketball Rules', proficiencyLevel: 'Expert' },
           { skillName: 'Referee Training', proficiencyLevel: 'Advanced' },
@@ -164,7 +164,7 @@ async function addSampleJobs() {
         title: 'Event Coordinator',
         description: 'Coordinate sports events and tournaments. Excellent organizational skills required.',
         location: 'Miami, FL',
-        salary: { min: 40000, max: 60000, currency: 'USD' },
+        salary: { min: 40000, max: 60000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Event Planning', proficiencyLevel: 'Advanced' },
           { skillName: 'Communication', proficiencyLevel: 'Advanced' },
@@ -179,7 +179,7 @@ async function addSampleJobs() {
         title: 'Tennis Instructor',
         description: 'Teach tennis lessons to players of all skill levels. PTR certification preferred.',
         location: 'Boston, MA',
-        salary: { min: 28000, max: 42000, currency: 'USD' },
+        salary: { min: 28000, max: 42000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Tennis Instruction', proficiencyLevel: 'Advanced' },
           { skillName: 'Player Development', proficiencyLevel: 'Intermediate' },
@@ -194,7 +194,7 @@ async function addSampleJobs() {
         title: 'Facility Maintenance Helper',
         description: 'Assist with general facility maintenance and cleaning. Part-time position.',
         location: 'Phoenix, AZ',
-        salary: { min: 20000, max: 30000, currency: 'USD' },
+        salary: { min: 20000, max: 30000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Maintenance', proficiencyLevel: 'Intermediate' },
           { skillName: 'Cleaning', proficiencyLevel: 'Beginner' },
@@ -209,7 +209,7 @@ async function addSampleJobs() {
         title: 'Volleyball Coach Assistant',
         description: 'Assist head coach with volleyball training sessions and team management.',
         location: 'Seattle, WA',
-        salary: { min: 25000, max: 38000, currency: 'USD' },
+        salary: { min: 25000, max: 38000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Volleyball Coaching', proficiencyLevel: 'Intermediate' },
           { skillName: 'Team Support', proficiencyLevel: 'Intermediate' },
@@ -224,7 +224,7 @@ async function addSampleJobs() {
         title: 'Scorekeeper',
         description: 'Keep official scores for various sports games. Attention to detail required.',
         location: 'Denver, CO',
-        salary: { min: 20000, max: 30000, currency: 'USD' },
+        salary: { min: 20000, max: 30000, currency: '₹' },
         requiredSkills: [
           { skillName: 'Scorekeeping', proficiencyLevel: 'Intermediate' },
           { skillName: 'Attention to Detail', proficiencyLevel: 'Advanced' },
