@@ -139,6 +139,22 @@ const ChatInterface = () => {
     }
   };
 
+  const chatContainerRef = React.useRef(null);
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      const { scrollHeight, clientHeight } = chatContainerRef.current;
+      chatContainerRef.current.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, activeUser]);
+
   const filteredConversations = conversations.filter((c) => {
     const u = c.user;
     const name =
@@ -149,13 +165,13 @@ const ChatInterface = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-8">Messages</h1>
+    <div className="min-h-screen bg-gray-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 h-[calc(100vh-140px)] min-h-[500px]">
+        <h1 className="text-3xl font-bold mb-4">Messages</h1>
 
-        <div className="grid md:grid-cols-4 gap-6 h-[600px]">
+        <div className="grid md:grid-cols-4 gap-6 h-full pb-2">
           {/* LEFT: Users list */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
             <div className="p-4 border-b">
               <h2 className="text-lg font-bold mb-4">Conversations</h2>
               <div className="relative">
@@ -217,9 +233,9 @@ const ChatInterface = () => {
 
           {/* RIGHT: Chat area */}
           {activeUser ? (
-            <div className="col-span-3 bg-white rounded-lg shadow-lg flex flex-col">
+            <div className="col-span-3 bg-white rounded-lg shadow-lg flex flex-col h-full overflow-hidden">
               {/* Header */}
-              <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <div className="p-4 border-b flex justify-between items-center bg-gray-50 shrink-0">
                 <div className="flex items-center gap-3">
                   {activeUser.profilePhoto ? (
                     <img src={activeUser.profilePhoto} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
@@ -249,7 +265,10 @@ const ChatInterface = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+              <div
+                ref={chatContainerRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 bg-white"
+              >
                 {loadingMessages ? (
                   <p className="text-center text-gray-500">Loading messages...</p>
                 ) : messages.length === 0 ? (
@@ -303,7 +322,7 @@ const ChatInterface = () => {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t bg-gray-50">
+              <form onSubmit={handleSendMessage} className="p-4 border-t bg-gray-50 shrink-0">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -322,7 +341,7 @@ const ChatInterface = () => {
               </form>
             </div>
           ) : (
-            <div className="col-span-3 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center text-gray-400">
+            <div className="col-span-3 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center text-gray-400 h-full">
               <FaUserCircle className="w-24 h-24 mb-4 opacity-20" />
               <p className="text-xl font-medium">Select a conversation</p>
               <p className="text-sm">Choose a user from the list to start chatting</p>
